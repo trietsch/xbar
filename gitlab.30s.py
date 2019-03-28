@@ -10,10 +10,6 @@
 # <bitbar.image>CHANGE_ME_TO_GITHUB_IMAGE_PREVIEW</bitbar.image>
 # <bitbar.abouturl>CHANGE_ME_TO_GITHUB_URL</bitbar.abouturl>
 
-# README
-# Change the settings below, by default, only projects are included that you've starred and of which you're a member
-# So if you don't change that behavior, go to the Gitlab instances and star the projects that you want to see
-
 # Settings can be found in the .gitlab-config.py file
 # You don't have to change anything below
 # -------------------------------------------------------------------------------------------------------------
