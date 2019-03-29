@@ -31,3 +31,7 @@ Install the following Python packages (`pip install ...`):
 - timeago
 - python-dateutil
 - requests
+
+#### Improvements
+
+Add notifications, overwriting each run result in a pickle file, in order to compare whether checkins have fixed the build, whether there was another successful build, etc.
