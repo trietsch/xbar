@@ -1,14 +1,16 @@
-#!/Users/rtrietsch/.pyenv/versions/3.6.1/bin/python3.6
+#!/bin/sh
+'''' 2>/dev/null; exec /usr/bin/env /Users/$USER/.pyenv/versions/3.6.0/bin/python -x "$0" "$@" #'''
+
 # -*- coding: utf-8 -*-
+
+# Reference to the unique and interesting hashbang at the top of the script: https://unix.stackexchange.com/a/501710
 
 # <bitbar.title>Gitlab CI (CCMenu functionality)</bitbar.title>
 # <bitbar.desc>Shows the most recent build status for your projects</bitbar.desc>
-# <bitbar.version>CHANGE_ME</bitbar.version>
 # <bitbar.author>Robin Trietsch</bitbar.author>
 # <bitbar.author.github>trietsch</bitbar.author.github>
 # <bitbar.dependencies>python3</bitbar.dependencies>
-# <bitbar.image>CHANGE_ME_TO_GITHUB_IMAGE_PREVIEW</bitbar.image>
-# <bitbar.abouturl>CHANGE_ME_TO_GITHUB_URL</bitbar.abouturl>
+# <bitbar.abouturl>https://gitlab.com/trietsch/bitbar</bitbar.abouturl>
 
 # Settings can be found in the .gitlab-config.py file
 # You don't have to change anything below
@@ -16,7 +18,6 @@
 # -------------------------------------------------------------------------------------------------------------
 
 import json
-import math
 import os
 from configparser import ConfigParser
 from datetime import datetime
@@ -24,6 +25,7 @@ from enum import Enum
 
 import dateutil.parser
 import requests
+import timeago
 
 # Get preferences
 config = ConfigParser()
@@ -100,7 +102,8 @@ def get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _elemen
     # Current is running, previous is successful
     if ((current_job_status == GitlabCiStatus.running.name or
          current_job_status == GitlabCiStatus.pending.name) and
-            previous_job_status == GitlabCiStatus.success.name):
+            (previous_job_status == GitlabCiStatus.success.name or
+             previous_job_status == GitlabCiStatus.manual.name)):
         return PipelineStatus.SUCCESS_BUILDING
     elif ((current_job_status == GitlabCiStatus.running.name or
            current_job_status == GitlabCiStatus.pending.name) and
@@ -115,6 +118,7 @@ def get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _elemen
     elif current_job_status == GitlabCiStatus.canceled.name or current_job_status == GitlabCiStatus.skipped.name:
         return get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _element_index + 1)
     else:
+        # For debugging purposes
         print("Current Job Status: " + current_job_status)
 
 
@@ -138,50 +142,6 @@ def get_status_image(_pipeline_status):
         return icon_inactive
     elif _pipeline_status == PipelineStatus.MANUAL:
         return icon_pause
-
-
-def relative_time(time=False):
-    """
-    Get a datetime object or a int() Epoch timestamp and return a
-    pretty string like 'an hour ago', 'Yesterday', '3 months ago',
-    'just now', etc
-    """
-
-    now = datetime.now()
-    if type(time) is int:
-        diff = now - datetime.fromtimestamp(time)
-    elif isinstance(time, datetime):
-        diff = now - time
-    elif not time:
-        diff = now - now
-    second_diff = diff.seconds
-    day_diff = diff.days
-
-    if day_diff < 0:
-        return ''
-
-    if day_diff == 0:
-        if second_diff < 10:
-            return "just now"
-        if second_diff < 60:
-            return str(math.floor(second_diff)) + " seconds ago"
-        if second_diff < 120:
-            return "a minute ago"
-        if second_diff < 3600:
-            return str(math.floor(second_diff / 60)) + " minutes ago"
-        if second_diff < 7200:
-            return "an hour ago"
-        if second_diff < 86400:
-            return str(math.floor(second_diff / 3600)) + " hours ago"
-    if day_diff == 1:
-        return "yesterday"
-    if day_diff < 7:
-        return str(math.floor(day_diff)) + " days ago"
-    if day_diff < 31:
-        return str(math.floor(day_diff / 7)) + " weeks ago"
-    if day_diff < 365:
-        return str(math.floor(day_diff / 30)) + " months ago"
-    return str(math.floor(day_diff / 365)) + " years ago"
 
 
 if __name__ == "__main__":
@@ -225,7 +185,7 @@ if __name__ == "__main__":
                 elif pipeline_status == PipelineStatus.SUCCESS:
                     status_success += 1
 
-                time_ago = relative_time(project_activity.replace(tzinfo=None))
+                time_ago = timeago.format(project_activity.replace(tzinfo=None), datetime.now())
 
                 gitlab_instance_projects.append(dict(
                     id=project_id,
