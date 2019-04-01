@@ -20,7 +20,7 @@
 import json
 import os
 from configparser import ConfigParser
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 import dateutil.parser
@@ -185,7 +185,12 @@ if __name__ == "__main__":
                 elif pipeline_status == PipelineStatus.SUCCESS:
                     status_success += 1
 
-                time_ago = timeago.format(project_activity.replace(tzinfo=None), datetime.now())
+                time_ago = timeago.format(
+                    project_activity.replace(tzinfo=timezone.utc)
+                        .astimezone(tz=None)
+                        .replace(tzinfo=None),
+                    datetime.now()
+                )
 
                 gitlab_instance_projects.append(dict(
                     id=project_id,
