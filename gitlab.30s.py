@@ -26,8 +26,9 @@ from enum import Enum
 import dateutil.parser
 import requests
 import timeago
-
 # Get preferences
+from requests import Timeout
+
 config = ConfigParser()
 config.read(os.path.dirname(os.path.realpath(__file__)) + '/.gitlab-config.ini')
 preferences = config._sections
@@ -68,7 +69,7 @@ def get_project_page(_api_key, _url, _page, _projects):
         starred=CHECK_STARRED_ONLY,
         simple='true'
     )
-    r = requests.get(_url + API_PROJECTS, params=params)
+    r = requests.get(_url + API_PROJECTS, params=params, timeout=5)
 
     # Parse the JSON returned by GitLab and extract the projects
     result = _projects + r.json()
@@ -203,8 +204,17 @@ if __name__ == "__main__":
                 ))
 
             bitbar_gitlab_projects.append(dict(gitlab_name=gitlab_instance, projects=gitlab_instance_projects))
-        except:
-            bitbar_gitlab_projects.append(dict(gitlab_name=gitlab_instance, projects=gitlab_instance_projects))
+        except Timeout as e:
+            bitbar_gitlab_projects.append(dict(gitlab_name=gitlab_instance, projects=gitlab_instance_projects,
+                                               exception="timeout"))
+            continue
+        except ConnectionError as e:
+            bitbar_gitlab_projects.append(dict(gitlab_name=gitlab_instance, projects=gitlab_instance_projects,
+                                               exception="connection error"))
+            continue
+        except Exception as e:
+            bitbar_gitlab_projects.append(dict(gitlab_name=gitlab_instance, projects=gitlab_instance_projects,
+                                               exception="unknown error"))
             continue
 
     # Now construct the bitbar menu
@@ -226,13 +236,19 @@ if __name__ == "__main__":
     for gitlab_instance in bitbar_gitlab_projects:
         # Start menu items
         gitlab_name = gitlab_instance['gitlab_name']
+        exception = gitlab_instance.get('exception')
         print("---")
-        print(gitlab_name + "|templateImage=" + gitlab_image)
 
-        sorted_projects = sorted(gitlab_instance['projects'], key=lambda p: p['activity'],
-                                 reverse=True) if SORT_ON == 'activity' else sorted(gitlab_instance['projects'],
-                                                                                    key=lambda p: p['name'])
+        if exception is not None:
+            print(gitlab_name + " - Error: " + exception + "|templateImage=" + gitlab_image)
+        else:
+            print(gitlab_name + "|templateImage=" + gitlab_image)
 
-        for project in sorted_projects:
-            print(project['name'] + "  -  " + project['time_ago'] + "|href=" + project['href'] + " image=" + project[
-                'image'])
+            sorted_projects = sorted(gitlab_instance['projects'], key=lambda p: p['activity'],
+                                     reverse=True) if SORT_ON == 'activity' else sorted(gitlab_instance['projects'],
+                                                                                        key=lambda p: p['name'])
+
+            for project in sorted_projects:
+                print(
+                    project['name'] + "  -  " + project['time_ago'] + "|href=" + project['href'] + " image=" + project[
+                        'image'])
