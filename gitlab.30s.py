@@ -97,30 +97,43 @@ def get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _elemen
     if len(result) == 0 or r.status_code != 200:
         return PipelineStatus.INACTIVE
 
-    current_job_status = result[_element_index]['status']
-    previous_job_status = result[_element_index + 1]['status']
+    elif len(result) > 1:
+        current_job_status = result[_element_index]['status']
+        previous_job_status = result[_element_index + 1]['status']
 
-    # Current is running, previous is successful
-    if ((current_job_status == GitlabCiStatus.running.name or
-         current_job_status == GitlabCiStatus.pending.name) and
-            (previous_job_status == GitlabCiStatus.success.name or
-             previous_job_status == GitlabCiStatus.manual.name)):
-        return PipelineStatus.SUCCESS_BUILDING
-    elif ((current_job_status == GitlabCiStatus.running.name or
-           current_job_status == GitlabCiStatus.pending.name) and
-          previous_job_status == GitlabCiStatus.failed.name):
-        return PipelineStatus.FAILURE_BUILDING
-    elif current_job_status == GitlabCiStatus.success.name:
-        return PipelineStatus.SUCCESS
-    elif current_job_status == GitlabCiStatus.failed.name:
-        return PipelineStatus.FAILURE
-    elif current_job_status == GitlabCiStatus.manual.name:
-        return PipelineStatus.MANUAL
-    elif current_job_status == GitlabCiStatus.canceled.name or current_job_status == GitlabCiStatus.skipped.name:
-        return get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _element_index + 1)
-    else:
-        # For debugging purposes
-        print("Current Job Status: " + current_job_status)
+        # Current is running, previous is successful
+        if ((current_job_status == GitlabCiStatus.running.name or
+             current_job_status == GitlabCiStatus.pending.name) and
+                (previous_job_status == GitlabCiStatus.success.name or
+                 previous_job_status == GitlabCiStatus.manual.name)):
+            return PipelineStatus.SUCCESS_BUILDING
+        elif ((current_job_status == GitlabCiStatus.running.name or
+               current_job_status == GitlabCiStatus.pending.name) and
+              previous_job_status == GitlabCiStatus.failed.name):
+            return PipelineStatus.FAILURE_BUILDING
+        elif current_job_status == GitlabCiStatus.success.name:
+            return PipelineStatus.SUCCESS
+        elif current_job_status == GitlabCiStatus.failed.name:
+            return PipelineStatus.FAILURE
+        elif current_job_status == GitlabCiStatus.manual.name:
+            return PipelineStatus.MANUAL
+        elif current_job_status == GitlabCiStatus.canceled.name or current_job_status == GitlabCiStatus.skipped.name:
+            return get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _element_index + 1)
+        else:
+            # For debugging purposes
+            print("Current Job Status: " + current_job_status)
+
+    elif len(result) == 1:
+        current_job_status = result[_element_index]['status']
+
+        if current_job_status == GitlabCiStatus.running.name or current_job_status == GitlabCiStatus.pending.name:
+            return PipelineStatus.SUCCESS_BUILDING
+        elif current_job_status == GitlabCiStatus.success.name:
+            return PipelineStatus.SUCCESS
+        elif current_job_status == GitlabCiStatus.failed.name:
+            return PipelineStatus.FAILURE
+        elif current_job_status == GitlabCiStatus.manual.name:
+            return PipelineStatus.MANUAL
 
 
 def get_status_image(_pipeline_status):
