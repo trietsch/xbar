@@ -1,4 +1,5 @@
 # Bitbar scripts
+This repo contains my personal Bitbar scripts.
 
 ## Installation
 To install Bitbar, run:
