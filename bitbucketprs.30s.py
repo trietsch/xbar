@@ -213,4 +213,4 @@ if __name__ == "__main__":
         print("---")
         print_prs("Reviewing", prs_to_review)
         print("---")
-        print_prs("Authored with work", prs_authored_with_work)
+        print_prs("Authored", prs_authored_with_work)
