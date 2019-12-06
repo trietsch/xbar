@@ -29,7 +29,7 @@ import timeago
 from requests import Timeout
 
 config_parser = ConfigParser()
-config_parser.read(os.path.dirname(os.path.realpath(__file__)) + 'config/.bitbucket-config.ini')
+config_parser.read(os.path.dirname(os.path.realpath(__file__)) + '/config/.bitbucket-config.ini')
 config = config_parser._sections
 
 BITBUCKET_HOST = config['preferences']['bitbucket_host']
