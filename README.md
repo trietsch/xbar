@@ -15,8 +15,6 @@ Integrates with (multiple) Gitlab hosts and shows the status like CCMenu does. A
 
 ![](.assets/gitlab.png)
 
-**Note**: bugs may still exist.
-
 To change the settings, copy the `.gitlab-config.template.ini` to `.gitlab-config.ini` and adjust to your own preferences. By default, only projects are included that you've starred and of which you're a member. So if you don't change that behavior, go to the Gitlab instances and star the projects that you want to see.
 
 **Important**: change the hashbang at the top of the file, to point to a Python 3 executable if the generic hashbang doesn't work for you. I've tried to create a hashbang that just looks at the default location that `pyenv` is installed
@@ -37,7 +35,31 @@ Install the following Python packages (`pip install ...`):
 
 Add notifications, overwriting each run result in a pickle file, in order to compare whether checkins have fixed the build, whether there was another successful build, etc.
 
-#### FAQ
+### Bitbucket PRs
+Show open PRs in a Bitbucket instance with a status whether you've still got PRs to review.
+
+![](.assets/bitbucket-prs.png)
+
+To change the settings, copy the `.bitbucket-config.template` to `.bitbucket-config.ini` and adjust to your own preferences. PRs that you have marked as approved can be omitted, by setting the value in the configuration.
+
+#### Dependencies
+
+If you want to use the current hashbang at the top of the file, make sure you've got `pyenv` installed:
+
+- `brew install pyenv`
+- `pyenv install 3.6.0` -> if you run into issues, see FAQ.
+
+Install the following Python packages (`pip install ...`):
+- timeago
+- python-dateutil
+- requests
+
+#### Improvements
+
+Add notifications, overwriting each run result in a pickle file, in order to compare whether checkins have fixed the build, whether there was another successful build, etc.
+
+
+## FAQ
 
 Q: I'm unable to install Python 3.6.0 due to `zlib` and errors while building Python 3.6.0.
 A:
