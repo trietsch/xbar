@@ -1,9 +1,5 @@
-#!/bin/sh
-'''' 2>/dev/null; exec /usr/bin/env /Users/$USER/.pyenv/versions/3.6.0/bin/python -x "$0" "$@" #'''
-
+#!/Users/rtrietsch/.pyenv/versions/3.6.0/bin/python
 # -*- coding: utf-8 -*-
-
-# Reference to the hashbang at the top of the script: https://unix.stackexchange.com/a/501710
 
 # <bitbar.title>Bitbucket PR</bitbar.title>
 # <bitbar.desc>Shows the status of PRs in a Bitbucket instance</bitbar.desc>
@@ -25,11 +21,10 @@ from distutils.util import strtobool
 
 import requests
 import timeago
-# Get preferences
 from requests import Timeout
 
 config_parser = ConfigParser()
-config_parser.read(os.path.dirname(os.path.realpath(__file__)) + '/config/.bitbucket-config.ini')
+config_parser.read(os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../config/bitbucket-config.ini'))
 config = config_parser._sections
 
 BITBUCKET_HOST = config['preferences']['bitbucket_host']

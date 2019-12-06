@@ -1,9 +1,5 @@
-#!/bin/sh
-'''' 2>/dev/null; exec /usr/bin/env /Users/$USER/.pyenv/versions/3.6.0/bin/python -x "$0" "$@" #'''
-
+#!/Users/rtrietsch/.pyenv/versions/3.6.0/bin/python
 # -*- coding: utf-8 -*-
-
-# Reference to the unique and interesting hashbang at the top of the script: https://unix.stackexchange.com/a/501710
 
 # <bitbar.title>Gitlab CI (CCMenu functionality)</bitbar.title>
 # <bitbar.desc>Shows the most recent build status for your projects</bitbar.desc>
@@ -26,18 +22,17 @@ from enum import Enum
 import dateutil.parser
 import requests
 import timeago
-# Get preferences
 from requests import Timeout
 
-config = ConfigParser()
-config.read(os.path.dirname(os.path.realpath(__file__)) + '/config/.gitlab-config.ini')
-preferences = config._sections
+config_parser = ConfigParser()
+config_parser.read(os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../config/gitlab-config.ini'))
+config = config_parser._sections
 
-CHECK_MEMBERSHIP = bool(preferences['preferences']['check_membership'])
-CHECK_STARRED_ONLY = bool(preferences['preferences']['check_starred_only'])
-SORT_ON = preferences['preferences']['sort_on']
+CHECK_MEMBERSHIP = bool(config['preferences']['check_membership'])
+CHECK_STARRED_ONLY = bool(config['preferences']['check_starred_only'])
+SORT_ON = config['preferences']['sort_on']
 
-GITLAB_HOSTS = json.loads(preferences['preferences']['gitlab_hosts'])
+GITLAB_HOSTS = json.loads(config['preferences']['gitlab_hosts'])
 
 # API paths
 API_PROJECTS = '/api/v4/projects'
@@ -170,8 +165,8 @@ if __name__ == "__main__":
     status_success = 0
 
     for gitlab_instance in GITLAB_HOSTS:
-        host = preferences[gitlab_instance]['host']
-        private_token = preferences[gitlab_instance]['private_token']
+        host = config[gitlab_instance]['host']
+        private_token = config[gitlab_instance]['private_token']
 
         gitlab_instance_projects = []
 
