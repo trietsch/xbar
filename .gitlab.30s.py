@@ -30,7 +30,7 @@ import timeago
 from requests import Timeout
 
 config = ConfigParser()
-config.read(os.path.dirname(os.path.realpath(__file__)) + '/.gitlab-config.ini')
+config.read(os.path.dirname(os.path.realpath(__file__)) + '/config/.gitlab-config.ini')
 preferences = config._sections
 
 CHECK_MEMBERSHIP = bool(preferences['preferences']['check_membership'])
