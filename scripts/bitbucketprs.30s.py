@@ -8,7 +8,7 @@
 # <bitbar.dependencies>python3</bitbar.dependencies>
 # <bitbar.abouturl>https://gitlab.com/trietsch/bitbar</bitbar.abouturl>
 
-# Settings can be found in the .gitlab-config.py file
+# Settings can be found in the .bitbucket-config.ini file
 # You don't have to change anything below
 # -------------------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------------------
@@ -117,7 +117,7 @@ def pr_is_marked_as_needs_work(pr):
 
 
 def epoch_ms_to_datetime(epoch_ms):
-    return datetime.fromtimestamp(epoch_ms / 1000.0)
+    return datetime.fromtimestamp(epoch_ms / 1000.0, tz=timezone.utc)
 
 
 def abbreviate_string(s):
@@ -144,6 +144,7 @@ def extract_pull_request_data(_pull_requests):
             overall_status=pr['overallStatus'],
             activity=pr_activity,
             time_ago=time_ago,
+            repo_href=pr['toRef']['repository']['links']['self'][0]['href'],
             href=pr['links']['self'][0]['href']
         ))
 
@@ -164,7 +165,8 @@ def print_prs(pr_type, pull_requests):
     for repo, repo_prs in itertools.groupby(prs_sorted_by_slug, key=lambda p: p['slug']):
         repo_prs_list = list(repo_prs)
         repo_status = determine_repo_status(repo_prs_list)
-        print(repo + " (" + str(len(repo_prs_list)) + ") | image = " + pr_status[repo_status])
+        repo_href = repo_prs_list[0]['repo_href']  # ugly yes, but that's because Bitbucket v1 api is ugly
+        print(repo + " (" + str(len(repo_prs_list)) + ") | href=" + repo_href + " image = " + pr_status[repo_status])
 
         prs_sorted_by_to_ref = sorted(repo_prs_list, key=lambda p: p['to_ref'])
 
