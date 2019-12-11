@@ -144,7 +144,7 @@ def extract_pull_request_data(_pull_requests):
             overall_status=pr['overallStatus'],
             activity=pr_activity,
             time_ago=time_ago,
-            repo_href=pr['toRef']['repository']['links']['self'][0]['href'],
+            repo_href=pr['toRef']['repository']['links']['self'][0]['href'].replace('browse', 'pull-requests'),
             href=pr['links']['self'][0]['href']
         ))
 
