@@ -309,11 +309,11 @@ if __name__ == "__main__":
             print("---")
             print_prs("Authored", pr_status.prs_authored_with_work)
 
-    previous_pr_status = PullRequestsOverview.load_cached()
-    new_prs = pr_status.determine_new_pull_requests_to_review(previous_pr_status)
+        previous_pr_status = PullRequestsOverview.load_cached()
+        new_prs = pr_status.determine_new_pull_requests_to_review(previous_pr_status)
 
-    if PullRequestConfig.NOTIFICATIONS_ENABLED:
-        for pr in new_prs:
-            send_notification_new_pr(pr.slug, pr.from_ref, pr.to_ref, pr.title)
+        if PullRequestConfig.NOTIFICATIONS_ENABLED:
+            for pr in new_prs:
+                send_notification_new_pr(pr.slug, pr.from_ref, pr.to_ref, pr.title)
 
-    pr_status.store()
+        pr_status.store()
