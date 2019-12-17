@@ -8,3 +8,4 @@ user_slug = # fill out, i.e. trietsr
 sort_on = activity
 abbreviation_characters = 30
 omit_reviewed_and_approved = False
+notifications_enabled = True
