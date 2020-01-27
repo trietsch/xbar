@@ -1,3 +1,6 @@
+[python]
+python_binary = "/path/to/python"
+
 [preferences]
 check_starred_only = True
 check_membership = True
