@@ -2,7 +2,7 @@ from configparser import ConfigParser
 import os
 from pathlib import Path
 
-from ..pull_requests import get_config_file
+from ..common.util import get_config_file
 
 
 class AppConfigReader(object):

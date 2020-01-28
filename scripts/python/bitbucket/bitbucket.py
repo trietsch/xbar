@@ -1,12 +1,12 @@
 from datetime import datetime, timezone
-from subprocess import Popen
 from typing import List
 
 import requests
 import timeago
+from requests import Timeout
 
 from .config import BitbucketConfig
-from ..pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview, get_absolute_bitbar_file_path
+from ..pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview
 
 
 def get_open_pull_requests_to_review(_api_key, _url):
@@ -108,33 +108,22 @@ def extract_pull_request_data(_raw_pull_requests) -> List[PullRequest]:
     return pull_requests
 
 
-def send_notification_new_pr(_repo_slug, _from_ref, _to_ref, _title):
-    send_notification(f'New pull request for {_repo_slug}', f'{_title}\n{_from_ref} -> {_to_ref}')
-
-
-def send_notification(title, message):
-    arguments = f"-title '{title}' -message '{message}' -appIcon '{get_absolute_bitbar_file_path('assets/pr-logo.png')}'"
-
-    Popen(["/bin/bash", "-c",
-           f"{get_absolute_bitbar_file_path('notifications/terminal-notifier.app/Contents/MacOS/terminal-notifier')} {arguments}"])
-
-
-def get_pr_status():
+def get_pull_request_overview() -> PullRequestsOverview:
     _prs_to_review: List[PullRequest] = []
     _prs_authored_with_work: List[PullRequest] = []
     _exception = None
-    # try:
-    _prs_to_review: List[PullRequest] = extract_pull_request_data(
-        get_open_pull_requests_to_review(BitbucketConfig.PRIVATE_TOKEN, BitbucketConfig.BITBUCKET_HOST)
-    )
-    _prs_authored_with_work: List[PullRequest] = extract_pull_request_data(
-        get_authored_pull_requests_with_work(BitbucketConfig.PRIVATE_TOKEN, BitbucketConfig.BITBUCKET_HOST)
-    )
-    # except Timeout as e:
-    #     _exception = "timeout"
-    # except ConnectionError as e:
-    #     _exception = "connection error"
-    # except Exception as e:
-    #     _exception = "unknown error"
+    try:
+        _prs_to_review: List[PullRequest] = extract_pull_request_data(
+            get_open_pull_requests_to_review(BitbucketConfig.PRIVATE_TOKEN, BitbucketConfig.BITBUCKET_HOST)
+        )
+        _prs_authored_with_work: List[PullRequest] = extract_pull_request_data(
+            get_authored_pull_requests_with_work(BitbucketConfig.PRIVATE_TOKEN, BitbucketConfig.BITBUCKET_HOST)
+        )
+    except Timeout as e:
+        _exception = "timeout"
+    except ConnectionError as e:
+        _exception = "connection error"
+    except Exception as e:
+        _exception = "unknown error"
 
     return PullRequestsOverview(_prs_to_review, _prs_authored_with_work, _exception)

@@ -1,3 +1,2 @@
-from .util import *
 from .domain import *
-from .print import print_prs
+from .menu import print_bitbar_pull_request_menu
