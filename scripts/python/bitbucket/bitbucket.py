@@ -1,15 +1,12 @@
-import itertools
 from datetime import datetime, timezone
 from subprocess import Popen
 from typing import List
 
 import requests
 import timeago
-from requests import Timeout
 
-from .domain import PullRequestStatus, PullRequest, BitbucketIcons, PullRequestsOverview
-from ..pull_requests import get_absolute_bitbar_file_path
-from .config import PullRequestConfig
+from .config import BitbucketConfig
+from ..pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview, get_absolute_bitbar_file_path
 
 
 def get_open_pull_requests_to_review(_api_key, _url):
@@ -36,7 +33,7 @@ def get_pull_requests(_api_key, _url, _params):
     headers = dict(
         Authorization=f'Bearer {_api_key}'
     )
-    r = requests.get(_url + PullRequestConfig.BITBUCKET_API_PULL_REQUESTS, params=_params, timeout=5, headers=headers)
+    r = requests.get(_url + BitbucketConfig.BITBUCKET_API_PULL_REQUESTS, params=_params, timeout=5, headers=headers)
 
     body = r.json()
     pull_requests = body['values']
@@ -51,11 +48,11 @@ def get_pull_requests(_api_key, _url, _params):
 
 def pr_should_be_reviewed_by_me(_pr):
     reviewers_filtered = list(
-        filter(lambda reviewer: reviewer['user']['slug'] == PullRequestConfig.USER_SLUG, _pr['reviewers']))
+        filter(lambda reviewer: reviewer['user']['slug'] == BitbucketConfig.USER_SLUG, _pr['reviewers']))
 
     if len(reviewers_filtered) > 0 and (
-            True if not PullRequestConfig.OMIT_REVIEWED_AND_APPROVED else reviewers_filtered[0][
-                                                                              'status'] != PullRequestStatus.APPROVED
+            True if not BitbucketConfig.OMIT_REVIEWED_AND_APPROVED else reviewers_filtered[0][
+                                                                            'status'] != PullRequestStatus.APPROVED
     ):
         _pr['overallStatus'] = reviewers_filtered[0]['status']
         return _pr
@@ -79,8 +76,8 @@ def epoch_ms_to_datetime(epoch_ms):
 
 
 def abbreviate_string(s):
-    return s[:PullRequestConfig.ABBREVIATION_CHARACTERS] + "..." if len(
-        s) > PullRequestConfig.ABBREVIATION_CHARACTERS else s
+    return s[:BitbucketConfig.ABBREVIATION_CHARACTERS] + "..." if len(
+        s) > BitbucketConfig.ABBREVIATION_CHARACTERS else s
 
 
 def extract_pull_request_data(_raw_pull_requests) -> List[PullRequest]:
@@ -96,7 +93,7 @@ def extract_pull_request_data(_raw_pull_requests) -> List[PullRequest]:
         )
 
         pull_requests.append(PullRequest(
-            id=_pr['id'],
+            id=str(_pr['id']),
             title=abbreviate_string(_pr['title']),
             slug=_pr['toRef']['repository']['slug'],
             from_ref=_pr['fromRef']['displayId'],
@@ -109,49 +106,6 @@ def extract_pull_request_data(_raw_pull_requests) -> List[PullRequest]:
         ))
 
     return pull_requests
-
-
-def sort_pull_requests(pull_requests):
-    return sorted(pull_requests, key=lambda p: p.activity,
-                  reverse=True) if PullRequestConfig.SORT_ON == 'activity' else sorted(pull_requests,
-                                                                                       key=lambda p: p['title'])
-
-
-def print_prs(pr_type, pull_requests):
-    print(pr_type + " | templateImage=" + BitbucketIcons.BITBUCKET)
-    print("---")
-
-    prs_sorted_by_slug = sorted(pull_requests, key=lambda p: p.slug)
-
-    for repo, repo_prs in itertools.groupby(prs_sorted_by_slug, key=lambda p: p.slug):
-        repo_prs_list: List[PullRequest] = list(repo_prs)
-        repo_status = determine_repo_status(repo_prs_list)
-        repo_href = repo_prs_list[0].repo_href  # ugly yes, but that's because Bitbucket v1 api is ugly
-        print(repo + " (" + str(len(repo_prs_list)) + ") | href=" + repo_href + " image = " + BitbucketIcons.STATUS[
-            repo_status])
-
-        prs_sorted_by_to_ref = sorted(repo_prs_list, key=lambda p: p.to_ref)
-
-        for to_ref, to_ref_prs in itertools.groupby(prs_sorted_by_to_ref, key=lambda p: p.to_ref):
-            to_ref_prs_list: List[PullRequest] = sort_pull_requests(list(to_ref_prs))
-            print("--" + to_ref)
-
-            for _pr in to_ref_prs_list:
-                print("--" +
-                      _pr.from_ref + " -- " + _pr.title + " (#" + _pr.id + ") - " + _pr.time_ago + "|href=" + _pr.href
-                      + " image=" + BitbucketIcons.STATUS[_pr.overall_status]
-                      )
-
-
-def determine_repo_status(prs_list: List[PullRequest]):
-    statuses = [_pr.overall_status for _pr in prs_list]
-
-    if PullRequestStatus.UNAPPROVED in statuses:
-        return PullRequestStatus.UNAPPROVED
-    elif PullRequestStatus.NEEDS_WORK in statuses:
-        return PullRequestStatus.NEEDS_WORK
-    else:
-        return PullRequestStatus.APPROVED
 
 
 def send_notification_new_pr(_repo_slug, _from_ref, _to_ref, _title):
@@ -169,18 +123,18 @@ def get_pr_status():
     _prs_to_review: List[PullRequest] = []
     _prs_authored_with_work: List[PullRequest] = []
     _exception = None
-    try:
-        _prs_to_review: List[PullRequest] = extract_pull_request_data(
-            get_open_pull_requests_to_review(PullRequestConfig.PRIVATE_TOKEN, PullRequestConfig.BITBUCKET_HOST)
-        )
-        _prs_authored_with_work: List[PullRequest] = extract_pull_request_data(
-            get_authored_pull_requests_with_work(PullRequestConfig.PRIVATE_TOKEN, PullRequestConfig.BITBUCKET_HOST)
-        )
-    except Timeout as e:
-        _exception = "timeout"
-    except ConnectionError as e:
-        _exception = "connection error"
-    except Exception as e:
-        _exception = "unknown error"
+    # try:
+    _prs_to_review: List[PullRequest] = extract_pull_request_data(
+        get_open_pull_requests_to_review(BitbucketConfig.PRIVATE_TOKEN, BitbucketConfig.BITBUCKET_HOST)
+    )
+    _prs_authored_with_work: List[PullRequest] = extract_pull_request_data(
+        get_authored_pull_requests_with_work(BitbucketConfig.PRIVATE_TOKEN, BitbucketConfig.BITBUCKET_HOST)
+    )
+    # except Timeout as e:
+    #     _exception = "timeout"
+    # except ConnectionError as e:
+    #     _exception = "connection error"
+    # except Exception as e:
+    #     _exception = "unknown error"
 
     return PullRequestsOverview(_prs_to_review, _prs_authored_with_work, _exception)

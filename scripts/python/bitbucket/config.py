@@ -1,15 +1,16 @@
 from distutils.util import strtobool
 
-from ..common import AppConfigReader
+from ..common.config import AppConfigReader
+from ..pull_requests import PullRequestSort
 
 
-class PullRequestConfig(object):
+class BitbucketConfig(object):
     _config = AppConfigReader.read("bitbucket")
 
     BITBUCKET_HOST = _config['preferences']['bitbucket_host']
     PRIVATE_TOKEN = _config['preferences']['private_token']
     USER_SLUG = _config['preferences']['user_slug']
-    SORT_ON = _config['preferences']['sort_on']
+    SORT_ON = PullRequestSort[_config['preferences']['sort_on'].upper()]
     ABBREVIATION_CHARACTERS = int(_config['preferences']['abbreviation_characters'])
     OMIT_REVIEWED_AND_APPROVED = strtobool(_config['preferences']['omit_reviewed_and_approved'])
     NOTIFICATIONS_ENABLED = strtobool(_config['preferences']['notifications_enabled'])
