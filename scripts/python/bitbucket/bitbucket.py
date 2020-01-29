@@ -6,6 +6,7 @@ import timeago
 from requests import Timeout
 
 from .config import BitbucketConfig
+from ..common.util import epoch_ms_to_datetime, abbreviate_string
 from ..pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview
 
 
@@ -71,15 +72,6 @@ def pr_is_marked_as_needs_work(_pr):
     return _pr
 
 
-def epoch_ms_to_datetime(epoch_ms):
-    return datetime.fromtimestamp(epoch_ms / 1000.0, tz=timezone.utc)
-
-
-def abbreviate_string(s):
-    return s[:BitbucketConfig.ABBREVIATION_CHARACTERS] + "..." if len(
-        s) > BitbucketConfig.ABBREVIATION_CHARACTERS else s
-
-
 def extract_pull_request_data(_raw_pull_requests) -> List[PullRequest]:
     pull_requests: List[PullRequest] = list()
 
@@ -94,7 +86,7 @@ def extract_pull_request_data(_raw_pull_requests) -> List[PullRequest]:
 
         pull_requests.append(PullRequest(
             id=str(_pr['id']),
-            title=abbreviate_string(_pr['title']),
+            title=abbreviate_string(_pr['title'], BitbucketConfig.ABBREVIATION_CHARACTERS),
             slug=_pr['toRef']['repository']['slug'],
             from_ref=_pr['fromRef']['displayId'],
             to_ref=_pr['toRef']['displayId'],

@@ -6,6 +6,7 @@ from azure.devops.v5_1.git import GitPullRequestSearchCriteria, GitPullRequest
 from msrest.authentication import BasicAuthentication
 
 from .config import AzureDevOpsConfig
+from ..common.util import abbreviate_string
 from ..pull_requests import PullRequest, PullRequestStatus
 
 
@@ -39,39 +40,33 @@ class GitPullRequestMapper(object):
     _votes_mapping = {
         -10: "REJECTED",
         -5: "WAITING_FOR_AUTHOR",
-        0: "NO_VOTE",
+        0: "UNAPPROVED",
         5: "APPROVED_WITH_SUGGESTIONS",
         10: "APPROVED"
     }
 
     @staticmethod
+    def _short_ref(ref_name: str):
+        return ref_name.replace('refs/heads/', '')
+
+    @staticmethod
+    def _to_pull_request(ado_pr: GitPullRequest) -> PullRequest:
+        repo_href = f"{AzureDevOpsConfig.ORGANIZATION_URL}/{ado_pr.repository.project.name}/_git/{ado_pr.repository.name}"
+        pr_href = f"{repo_href}/pullrequest/{ado_pr.pull_request_id}"
+
+        return PullRequest(
+            id=str(ado_pr.pull_request_id),
+            title=abbreviate_string(ado_pr.title, AzureDevOpsConfig.ABBREVIATION_CHARACTERS),
+            slug=f"ado-{ado_pr.pull_request_id}",
+            from_ref=GitPullRequestMapper._short_ref(ado_pr.source_ref_name),
+            to_ref=GitPullRequestMapper._short_ref(ado_pr.target_ref_name),
+            overall_status=PullRequestStatus.UNAPPROVED,  # TODO Map this
+            activity=datetime.now(),  # TODO fix datetime
+            time_ago="some time ago!",  # TODO fix timeago
+            repo_href=repo_href,
+            href=pr_href
+        )
+
+    @staticmethod
     def to_pull_requests(ado_pull_requests: List[GitPullRequest]) -> List[PullRequest]:
-        # pull_requests: List[PullRequest] = list()
-
-        return [PullRequest(
-            id=f"ado-{ado_pr.pull_request_id}",
-            title=ado_pr.title,
-            slug="slug",
-            from_ref="from_ref",
-            to_ref="to_ref",
-            overall_status=PullRequestStatus.UNAPPROVED,  # Map this
-            activity=datetime.now(),
-            time_ago="time_ago",
-            repo_href="repo_href",
-            href="href"
-        ) for ado_pr in ado_pull_requests]
-
-        # ado_pr: GitPullRequest
-        # for ado_pr in ado_pull_requests:
-        #     pr = PullRequest(
-        #         id=f"ado-{ado_pr.pull_request_id}",
-        #         title=ado_pr.title,
-        #         slug="<slug>",
-        #         from_ref="<from_ref>",
-        #         to_ref="<to_ref>",
-        #         overall_status=PullRequestStatus.UNAPPROVED,
-        #         activity=datetime.now(),
-        #         time_ago="<time_ago>",
-        #         repo_href="<repo_href",
-        #         href="<href>"
-        #     )
+        return [GitPullRequestMapper._to_pull_request(ado_pr) for ado_pr in ado_pull_requests]
