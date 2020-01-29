@@ -4,7 +4,6 @@ from typing import List, Dict
 from .domain import PullRequest, PullRequestSort, PullRequestStatus, PullRequestsOverview
 from .notification import send_notification_new_pr
 from ..common.icons import Icon
-from ..common.util import get_absolute_path_to_repo_file
 
 
 def sort_pull_requests(pull_requests: List[PullRequest], sort_on: PullRequestSort):
@@ -16,12 +15,13 @@ def sort_pull_requests(pull_requests: List[PullRequest], sort_on: PullRequestSor
 def determine_repo_status(prs_list: List[PullRequest]):
     statuses = [_pr.overall_status for _pr in prs_list]
 
-    # TODO add statuses for Azure DevOps
-    if PullRequestStatus.UNAPPROVED in statuses:
+    if PullRequestStatus.REJECTED in statuses:
+        return PullRequestStatus.REJECTED
+    elif (PullRequestStatus.UNAPPROVED or PullRequestStatus.NO_VOTE) in statuses:
         return PullRequestStatus.UNAPPROVED
-    elif PullRequestStatus.NEEDS_WORK in statuses:
+    elif (PullRequestStatus.NEEDS_WORK or PullRequestStatus.WAITING_FOR_AUTHOR) in statuses:
         return PullRequestStatus.NEEDS_WORK
-    else:
+    else:  # Approved / Approved with suggestions
         return PullRequestStatus.APPROVED
 
 
@@ -39,7 +39,7 @@ def print_prs(
     for repo, repo_prs in itertools.groupby(prs_sorted_by_slug, key=lambda p: p.slug):
         repo_prs_list: List[PullRequest] = list(repo_prs)
         repo_status = determine_repo_status(repo_prs_list)
-        repo_href = repo_prs_list[0].repo_href  # ugly yes, but that's because Bitbucket v1 api is ugly
+        repo_href = repo_prs_list[0].repo_href
         print(repo + " (" + str(len(repo_prs_list)) + ") | href=" + repo_href + " image = " + status_icons[
             repo_status].base64_image)
 
@@ -94,7 +94,6 @@ def print_bitbar_pull_request_menu(
 
         if notifications_enabled:
             for pr in new_prs:
-                send_notification_new_pr(pr.slug, pr.from_ref, pr.to_ref, pr.title,
-                                         get_absolute_path_to_repo_file('assets/pr-logo.png'))
+                send_notification_new_pr(pr.slug, pr.from_ref, pr.to_ref, pr.title, 'assets/pr-logo.png')
 
         pr_overview.store(cache_file)

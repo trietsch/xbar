@@ -1,18 +1,18 @@
-import itertools
+from datetime import datetime
 from typing import List
 
 from azure.devops.connection import Connection
 from azure.devops.v5_1.git import GitPullRequestSearchCriteria, GitPullRequest
 from msrest.authentication import BasicAuthentication
 
-from .domain import AzureDevOpsIcons
-from .config import AzureDevOpsConfigReader
+from .config import AzureDevOpsConfig
+from ..pull_requests import PullRequest, PullRequestStatus
 
 
 class AzureDevOpsClientFactory(object):
     _connection_factory = Connection(
-        base_url=AzureDevOpsConfigReader.ORGANIZATION_URL,
-        creds=BasicAuthentication('', AzureDevOpsConfigReader.PERSONAL_ACCESS_TOKEN)
+        base_url=AzureDevOpsConfig.ORGANIZATION_URL,
+        creds=BasicAuthentication('', AzureDevOpsConfig.PERSONAL_ACCESS_TOKEN)
     )
 
     @staticmethod
@@ -35,31 +35,43 @@ class PullRequestClient(object):
             filter(lambda pr: user_email in map(lambda reviewer: reviewer.unique_name, pr.reviewers), pull_requests))
 
 
-class PullRequestPrinter(object):
+class GitPullRequestMapper(object):
+    _votes_mapping = {
+        -10: "REJECTED",
+        -5: "WAITING_FOR_AUTHOR",
+        0: "NO_VOTE",
+        5: "APPROVED_WITH_SUGGESTIONS",
+        10: "APPROVED"
+    }
 
     @staticmethod
-    def print_pull_requests(pr_type, header_icon, pull_requests):
-        print(pr_type + " | templateImage=" + header_icon)
-        print("---")
+    def to_pull_requests(ado_pull_requests: List[GitPullRequest]) -> List[PullRequest]:
+        # pull_requests: List[PullRequest] = list()
 
-        prs_sorted_by_slug = sorted(pull_requests, key=lambda p: p.slug)
+        return [PullRequest(
+            id=f"ado-{ado_pr.pull_request_id}",
+            title=ado_pr.title,
+            slug="slug",
+            from_ref="from_ref",
+            to_ref="to_ref",
+            overall_status=PullRequestStatus.UNAPPROVED,  # Map this
+            activity=datetime.now(),
+            time_ago="time_ago",
+            repo_href="repo_href",
+            href="href"
+        ) for ado_pr in ado_pull_requests]
 
-        for repo, repo_prs in itertools.groupby(prs_sorted_by_slug, key=lambda p: p.slug):
-            repo_prs_list: List[GitPullRequest] = list(repo_prs)
-            repo_status = determine_repo_status(repo_prs_list)
-            repo_href = repo_prs_list[0].repo_href
-            print(
-                repo + " (" + str(len(repo_prs_list)) + ") | href=" + repo_href + " image = " + AzureDevOpsIcons.STATUS[
-                    repo_status])
-
-            prs_sorted_by_to_ref = sorted(repo_prs_list, key=lambda p: p.to_ref)
-
-            for to_ref, to_ref_prs in itertools.groupby(prs_sorted_by_to_ref, key=lambda p: p.to_ref):
-                to_ref_prs_list: List[GitPullRequest] = sort_pull_requests(list(to_ref_prs))
-                print("--" + to_ref)
-
-                for _pr in to_ref_prs_list:
-                    print("--" +
-                          _pr.from_ref + " -- " + _pr.title + " (#" + _pr.id + ") - " + _pr.time_ago + "|href=" + _pr.href
-                          + " image=" + AzureDevOpsIcons.STATUS[_pr.overall_status]
-                          )
+        # ado_pr: GitPullRequest
+        # for ado_pr in ado_pull_requests:
+        #     pr = PullRequest(
+        #         id=f"ado-{ado_pr.pull_request_id}",
+        #         title=ado_pr.title,
+        #         slug="<slug>",
+        #         from_ref="<from_ref>",
+        #         to_ref="<to_ref>",
+        #         overall_status=PullRequestStatus.UNAPPROVED,
+        #         activity=datetime.now(),
+        #         time_ago="<time_ago>",
+        #         repo_href="<repo_href",
+        #         href="<href>"
+        #     )

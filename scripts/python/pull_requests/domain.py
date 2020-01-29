@@ -4,7 +4,8 @@ from datetime import datetime
 from enum import Enum
 from typing import List
 
-PullRequestStatus = Enum('PullRequestStatus', 'UNAPPROVED NEEDS_WORK APPROVED')
+PullRequestStatus = Enum('PullRequestStatus',
+                         'UNAPPROVED NEEDS_WORK APPROVED REJECTED WAITING_FOR_AUTHOR NO_VOTE APPROVED_WITH_SUGGESTIONS')
 PullRequestSort = Enum('PullRequestSort', 'ACTIVITY NAME')
 
 
