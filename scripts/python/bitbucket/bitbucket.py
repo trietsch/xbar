@@ -100,16 +100,16 @@ def extract_pull_request_data(_raw_pull_requests) -> List[PullRequest]:
     return pull_requests
 
 
-def get_pull_request_overview() -> PullRequestsOverview:
+def get_pull_request_overview(private_token: str, host: str) -> PullRequestsOverview:
     _prs_to_review: List[PullRequest] = []
     _prs_authored_with_work: List[PullRequest] = []
     _exception = None
     try:
         _prs_to_review: List[PullRequest] = extract_pull_request_data(
-            get_open_pull_requests_to_review(BitbucketConfig.PRIVATE_TOKEN, BitbucketConfig.BITBUCKET_HOST)
+            get_open_pull_requests_to_review(private_token, host)
         )
         _prs_authored_with_work: List[PullRequest] = extract_pull_request_data(
-            get_authored_pull_requests_with_work(BitbucketConfig.PRIVATE_TOKEN, BitbucketConfig.BITBUCKET_HOST)
+            get_authored_pull_requests_with_work(private_token, host)
         )
     except Timeout as e:
         _exception = "timeout"

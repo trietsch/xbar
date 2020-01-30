@@ -4,10 +4,11 @@ from typing import List
 from azure.devops.connection import Connection
 from azure.devops.v5_1.git import GitPullRequestSearchCriteria, GitPullRequest
 from msrest.authentication import BasicAuthentication
+from requests import Timeout
 
 from .config import AzureDevOpsConfig
 from ..common.util import abbreviate_string
-from ..pull_requests import PullRequest, PullRequestStatus
+from ..pull_requests import PullRequest, PullRequestStatus, PullRequestsOverview
 
 
 class AzureDevOpsClientFactory(object):
@@ -25,15 +26,37 @@ class PullRequestClient(object):
     def __init__(self):
         self._git_client = AzureDevOpsClientFactory.get_git_client()
 
-    def get_pull_requests_for_project(self, project, pr_status) -> List[GitPullRequest]:
+    def get_pull_requests_overview(self, project, pr_status, user_email) -> PullRequestsOverview:
+        _prs_to_review: List[PullRequest] = []
+        _prs_authored_with_work: List[PullRequest] = []
+        _exception = None
+
+        try:
+            _prs_to_review = self._get_pull_request_to_be_reviewed_by(project, pr_status, user_email)
+
+        except Timeout as e:
+            _exception = "timeout"
+        except ConnectionError as e:
+            _exception = "connection error"
+        except Exception as e:
+            _exception = "unknown error"
+
+        return PullRequestsOverview(_prs_to_review, _prs_authored_with_work, _exception)
+
+    def _get_pull_requests_for_project(self, project, pr_status) -> List[GitPullRequest]:
         return self._git_client.get_pull_requests_by_project(project,
                                                              GitPullRequestSearchCriteria(status=pr_status))
 
-    def get_pull_request_to_be_reviewed_by(self, project, pr_status, user_email) -> List[GitPullRequest]:
-        pull_requests = self.get_pull_requests_for_project(project, pr_status)
+    def _get_pull_request_to_be_reviewed_by(self, project, pr_status, user_email) -> List[PullRequest]:
+        prs = self._get_pull_requests_for_project(project, pr_status)
 
-        return list(
-            filter(lambda pr: user_email in map(lambda reviewer: reviewer.unique_name, pr.reviewers), pull_requests))
+        prs_to_review_by_user = list(
+            filter(lambda pr: user_email in
+                              map(lambda reviewer: reviewer.unique_name, pr.reviewers),
+                   prs)
+        )
+
+        return GitPullRequestMapper.to_pull_requests(prs_to_review_by_user)
 
 
 class GitPullRequestMapper(object):
