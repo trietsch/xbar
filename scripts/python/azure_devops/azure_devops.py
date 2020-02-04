@@ -1,8 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 
+import timeago
 from azure.devops.connection import Connection
-from azure.devops.v5_1.git import GitPullRequestSearchCriteria, GitPullRequest
+from azure.devops.v5_1.git import GitPullRequestSearchCriteria, GitPullRequest, IdentityRefWithVote
 from msrest.authentication import BasicAuthentication
 from requests import Timeout
 
@@ -61,11 +62,11 @@ class PullRequestClient(object):
 
 class GitPullRequestMapper(object):
     _votes_mapping = {
-        -10: "REJECTED",
-        -5: "WAITING_FOR_AUTHOR",
-        0: "UNAPPROVED",
-        5: "APPROVED_WITH_SUGGESTIONS",
-        10: "APPROVED"
+        -10: PullRequestStatus.REJECTED,
+        -5: PullRequestStatus.WAITING_FOR_AUTHOR,
+        0: PullRequestStatus.UNAPPROVED,
+        5: PullRequestStatus.APPROVED_WITH_SUGGESTIONS,
+        10: PullRequestStatus.APPROVED
     }
 
     @staticmethod
@@ -77,14 +78,21 @@ class GitPullRequestMapper(object):
         repo_href = f"{AzureDevOpsConfig.ORGANIZATION_URL}/{ado_pr.repository.project.name}/_git/{ado_pr.repository.name}"
         pr_href = f"{repo_href}/pullrequest/{ado_pr.pull_request_id}"
 
+        time_ago = timeago.format(
+            ado_pr.creation_date.replace(tzinfo=timezone.utc)
+                .astimezone(tz=None)
+                .replace(tzinfo=None),
+            datetime.now()
+        )
+
         return PullRequest(
             id=str(ado_pr.pull_request_id),
             title=abbreviate_string(ado_pr.title, AzureDevOpsConfig.ABBREVIATION_CHARACTERS),
-            slug=f"ado-{ado_pr.pull_request_id}",
+            slug=ado_pr.repository.name,
             from_ref=GitPullRequestMapper._short_ref(ado_pr.source_ref_name),
             to_ref=GitPullRequestMapper._short_ref(ado_pr.target_ref_name),
-            overall_status=PullRequestStatus.UNAPPROVED,  # TODO Map this
-            activity=datetime.now(),  # TODO fix datetime
+            overall_status=GitPullRequestMapper.get_reviewer_status(ado_pr.reviewers),
+            activity=ado_pr.creation_date,
             time_ago="some time ago!",  # TODO fix timeago
             repo_href=repo_href,
             href=pr_href
@@ -93,3 +101,12 @@ class GitPullRequestMapper(object):
     @staticmethod
     def to_pull_requests(ado_pull_requests: List[GitPullRequest]) -> List[PullRequest]:
         return [GitPullRequestMapper._to_pull_request(ado_pr) for ado_pr in ado_pull_requests]
+
+    @staticmethod
+    def get_reviewer_status(reviewers: List[IdentityRefWithVote]) -> PullRequestStatus:
+        user_review = list(filter(lambda r: r.unique_name == AzureDevOpsConfig.USER_EMAIL, reviewers))
+
+        if len(user_review) > 0:
+            return GitPullRequestMapper._votes_mapping[user_review[0].vote]
+        else:
+            return PullRequestStatus.UNAPPROVED
