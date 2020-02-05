@@ -1,10 +1,10 @@
 from ..azure_devops import AzureDevOpsConfig, PullRequestClient
 from ..azure_devops.config import AzureDevOpsIcons
-from ..bitbucket import get_pull_request_overview, BitbucketConfig
+from ..bitbucket import get_pull_request_overview, BitbucketConfig, BitbucketIcons
 from ..pull_requests import print_bitbar_pull_request_menu
 
 azure_devops_prs = PullRequestClient().get_pull_requests_overview(
-    AzureDevOpsConfig.PROJECTS[0],
+    AzureDevOpsConfig.PROJECTS[0], # TODO add multi project support
     AzureDevOpsConfig.PULL_REQUEST_STATUS,
     AzureDevOpsConfig.USER_EMAIL,
     AzureDevOpsConfig.TEAM_NAME
@@ -15,14 +15,15 @@ bitbucket_prs = get_pull_request_overview(
     BitbucketConfig.BITBUCKET_HOST
 )
 
+# Merge contents
 all_prs = azure_devops_prs.join(bitbucket_prs)
+pr_statuses = {**AzureDevOpsIcons.PR_STATUSES, **BitbucketIcons.PR_STATUSES}
+cache_file = f"{AzureDevOpsConfig.CACHE_FILE}_{BitbucketConfig.MODULE}_combined"
 
 print_bitbar_pull_request_menu(
     all_prs,
-    AzureDevOpsIcons.PULL_REQUEST,
-    AzureDevOpsIcons.AZURE_DEVOPS,
-    AzureDevOpsIcons.PR_STATUSES,
+    pr_statuses,
     AzureDevOpsConfig.SORT_ON,
-    AzureDevOpsConfig.CACHE_FILE,
+    cache_file,
     AzureDevOpsConfig.NOTIFICATIONS_ENABLED
 )

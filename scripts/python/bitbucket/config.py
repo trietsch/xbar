@@ -7,7 +7,8 @@ from ..pull_requests import PullRequestSort, PullRequestStatus
 
 
 class BitbucketConfig(object):
-    _config = AppConfigReader.read("bitbucket")
+    MODULE = "bitbucket"
+    _config = AppConfigReader.read(MODULE)
 
     BITBUCKET_HOST = _config['preferences']['bitbucket_host']
     PRIVATE_TOKEN = _config['preferences']['private_token']

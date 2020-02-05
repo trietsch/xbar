@@ -8,14 +8,15 @@ from ..pull_requests import PullRequestSort, PullRequestStatus
 
 
 class AzureDevOpsConfig(object):
-    _config = AppConfigReader.read("azure_devops")
+    MODULE = "azure_devops"
+    _config = AppConfigReader.read(MODULE)
 
     ORGANIZATION_URL = f'https://dev.azure.com/{_config["preferences"]["organization"]}'
     PERSONAL_ACCESS_TOKEN = _config['preferences']['personal_access_token']
     PROJECTS = json.loads(_config['preferences']['projects'])
     PULL_REQUEST_STATUS = _config['preferences']['pull_request_status']
-    USER_EMAIL = _config['preferences']['user_email']
-    TEAM_NAME = _config['preferences']['team_name']
+    USER_EMAIL = _config['preferences']['user_email'].lower()
+    TEAM_NAME = _config['preferences']['team_name'].lower()
 
     SORT_ON = PullRequestSort[_config['preferences']['sort_on'].upper()]
     ABBREVIATION_CHARACTERS = int(_config['preferences']['abbreviation_characters'])

@@ -59,15 +59,15 @@ class PullRequestClient(object):
 
         return GitPullRequestMapper.to_pull_requests(prs_to_review_by_user)
 
-    def _is_reviewer_for_pr(self, user_email, team_name, pr: GitPullRequest) -> List[GitPullRequest]:
+    def _is_reviewer_for_pr(self, user_email, team_name, pr: GitPullRequest) -> bool:
         reviewer_names = self._get_reviewer_names(pr)
 
         return (user_email in reviewer_names['unique_names']) or any(
             team_name in r for r in reviewer_names['display_names'])
 
     def _get_reviewer_names(self, pr: GitPullRequest) -> Dict[List[str], List[str]]:
-        unique_names = list(map(lambda r: r.unique_name, pr.reviewers))
-        display_names = list(map(lambda r: r.display_name, pr.reviewers))
+        unique_names = list(map(lambda r: r.unique_name.lower(), pr.reviewers))
+        display_names = list(map(lambda r: r.display_name.lower(), pr.reviewers))
 
         return dict(pr=pr, unique_names=unique_names, display_names=display_names)
 
@@ -109,7 +109,7 @@ class GitPullRequestMapper(object):
 
     @staticmethod
     def get_reviewer_status(reviewers: List[IdentityRefWithVote]) -> PullRequestStatus:
-        user_review = list(filter(lambda r: r.unique_name == AzureDevOpsConfig.USER_EMAIL, reviewers))
+        user_review = list(filter(lambda r: r.unique_name.lower() == AzureDevOpsConfig.USER_EMAIL.lower(), reviewers))
 
         if len(user_review) > 0:
             return GitPullRequestMapper._votes_mapping[user_review[0].vote]

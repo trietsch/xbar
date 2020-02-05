@@ -17,10 +17,9 @@ class AppConfigReader(object):
     @staticmethod
     def _add_cache_path(config_parser: ConfigParser, filename: str):
         cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/nl.robintrietsch.bitbar")
-        cache_file = f"{filename}.bitbarcache"
 
         if not os.path.exists(cache_path):
             os.makedirs(cache_path)
 
         config_parser.add_section("common")
-        config_parser.set("common", "cache_path", f'{cache_path}/{cache_file}')
+        config_parser.set("common", "cache_path", f'{cache_path}/{filename}')

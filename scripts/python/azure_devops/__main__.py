@@ -10,8 +10,6 @@ print_bitbar_pull_request_menu(
         AzureDevOpsConfig.USER_EMAIL,
         AzureDevOpsConfig.TEAM_NAME
     ),
-    AzureDevOpsIcons.PULL_REQUEST,
-    AzureDevOpsIcons.AZURE_DEVOPS,
     AzureDevOpsIcons.PR_STATUSES,
     AzureDevOpsConfig.SORT_ON,
     AzureDevOpsConfig.CACHE_FILE,

@@ -42,6 +42,7 @@ class PullRequestsOverview(object):
         self.prs_authored_with_work += other.prs_authored_with_work
 
         if other.exception is not None:
+            # FIXME make this a more sophisticated construct, now it breaks the Bitbar PR menu bar
             print(f'Error while joining PullRequestsOverview: {other.exception}')
 
         return self

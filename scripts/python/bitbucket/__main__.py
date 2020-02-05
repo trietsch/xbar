@@ -6,8 +6,6 @@ print_bitbar_pull_request_menu(
         BitbucketConfig.PRIVATE_TOKEN,
         BitbucketConfig.BITBUCKET_HOST
     ),
-    BitbucketIcons.PULL_REQUEST,
-    BitbucketIcons.BITBUCKET,
     BitbucketIcons.PR_STATUSES,
     BitbucketConfig.SORT_ON,
     BitbucketConfig.CACHE_FILE,
