@@ -94,6 +94,6 @@ def print_bitbar_pull_request_menu(
 
         if notifications_enabled:
             for pr in new_prs:
-                send_notification_new_pr(pr.slug, pr.from_ref, pr.to_ref, pr.title, 'assets/pr-logo.png')
+                send_notification_new_pr(pr.slug, pr.from_ref, pr.to_ref, pr.title, 'assets/pr-logo.png', pr.href)
 
         pr_overview.store(cache_file)

@@ -1,10 +1,8 @@
-from datetime import timezone, datetime
-
 import dateutil.parser
-import timeago
 from requests import Timeout
 
 from . import GitlabConfig, PipelineStatus, get_projects, get_most_recent_project_pipeline_status, GitlabIcons
+from ..common.util import time_ago
 
 overall_status = PipelineStatus.INACTIVE
 bitbar_gitlab_projects = []
@@ -45,18 +43,11 @@ for instance in GitlabConfig.GITLAB_HOSTS:
             elif pipeline_status == PipelineStatus.SUCCESS:
                 status_success += 1
 
-            time_ago = timeago.format(
-                project_activity.replace(tzinfo=timezone.utc)
-                    .astimezone(tz=None)
-                    .replace(tzinfo=None),
-                datetime.now()
-            )
-
             gitlab_instance_projects.append(dict(
                 id=project_id,
                 name=project_name_and_path,
                 activity=project_activity,
-                time_ago=time_ago,
+                time_ago=time_ago(project_activity),
                 href=project_href,
                 status=pipeline_status,
                 image=GitlabIcons.STATUS[pipeline_status]

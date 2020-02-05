@@ -37,6 +37,15 @@ class PullRequestsOverview(object):
     prs_authored_with_work: List[PullRequest]
     exception: str
 
+    def join(self, other):
+        self.prs_to_review += other.prs_to_review
+        self.prs_authored_with_work += other.prs_authored_with_work
+
+        if other.exception is not None:
+            print(f'Error while joining PullRequestsOverview: {other.exception}')
+
+        return self
+
     def determine_new_pull_requests_to_review(self, other):
         current = [_pr.get_uuid() for _pr in self.prs_to_review]
         previous = [_pr.get_uuid() for _pr in other.prs_to_review]

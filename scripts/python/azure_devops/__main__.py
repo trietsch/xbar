@@ -7,7 +7,8 @@ print_bitbar_pull_request_menu(
     PullRequestClient().get_pull_requests_overview(
         AzureDevOpsConfig.PROJECTS[0],
         AzureDevOpsConfig.PULL_REQUEST_STATUS,
-        AzureDevOpsConfig.USER_EMAIL
+        AzureDevOpsConfig.USER_EMAIL,
+        AzureDevOpsConfig.TEAM_NAME
     ),
     AzureDevOpsIcons.PULL_REQUEST,
     AzureDevOpsIcons.AZURE_DEVOPS,

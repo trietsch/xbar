@@ -1,12 +1,10 @@
-from datetime import datetime, timezone
 from typing import List
 
 import requests
-import timeago
 from requests import Timeout
 
 from .config import BitbucketConfig
-from ..common.util import epoch_ms_to_datetime, abbreviate_string
+from ..common.util import epoch_ms_to_datetime, abbreviate_string, time_ago
 from ..pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview
 
 
@@ -77,12 +75,6 @@ def extract_pull_request_data(_raw_pull_requests) -> List[PullRequest]:
 
     for _pr in _raw_pull_requests:
         pr_activity = epoch_ms_to_datetime(_pr['updatedDate'])
-        time_ago = timeago.format(
-            pr_activity.replace(tzinfo=timezone.utc)
-                .astimezone(tz=None)
-                .replace(tzinfo=None),
-            datetime.now()
-        )
 
         pull_requests.append(PullRequest(
             id=str(_pr['id']),
@@ -92,7 +84,7 @@ def extract_pull_request_data(_raw_pull_requests) -> List[PullRequest]:
             to_ref=_pr['toRef']['displayId'],
             overall_status=_pr['overallStatus'],
             activity=pr_activity,
-            time_ago=time_ago,
+            time_ago=time_ago(pr_activity),
             repo_href=_pr['toRef']['repository']['links']['self'][0]['href'].replace('browse', 'pull-requests'),
             href=_pr['links']['self'][0]['href']
         ))
