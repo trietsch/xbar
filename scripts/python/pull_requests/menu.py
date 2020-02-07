@@ -1,7 +1,7 @@
 import itertools
 from typing import List, Dict
 
-from .domain import PullRequest, PullRequestSort, PullRequestStatus, PullRequestsOverview
+from .domain import PullRequest, PullRequestSort, PullRequestStatus, PullRequestsOverview, PullRequestException
 from .notification import send_notification_new_pr
 from ..common.icons import Icon, Icons
 
@@ -60,16 +60,13 @@ def print_bitbar_pull_request_menu(
         cache_file: str,
         notifications_enabled: bool
 ):
-    if pr_overview.exception is not None:
-        print(f"? | templateImage={Icons.PULL_REQUEST.base64_image}")
-        print("---")
-        print(f"Error: {pr_overview.exception} |templateImage={Icons.REVIEW.base64_image}")
-    else:
+    total_prs_to_review = len(pr_overview.prs_to_review)
+    total_prs_authored_with_work = len(pr_overview.prs_authored_with_work)
+    total_prs = total_prs_to_review + total_prs_authored_with_work
+
+    if total_prs > 0:
         # Set menubar icon
-        total_prs_to_review = len(pr_overview.prs_to_review)
-        total_prs_authored_with_work = len(pr_overview.prs_authored_with_work)
-        total_prs = str(total_prs_to_review + total_prs_authored_with_work)
-        print(f"{total_prs} | templateImage={Icons.PULL_REQUEST.base64_image}")
+        print(f"{str(total_prs)} | templateImage={Icons.PULL_REQUEST.base64_image}")
 
         # Start menu items
         if total_prs == 0:
@@ -84,11 +81,23 @@ def print_bitbar_pull_request_menu(
             print("---")
             print_prs("Authored", pr_overview.prs_authored_with_work, sort_on, Icons.AUTHORED, pr_statuses)
 
-        previous_pr_status = PullRequestsOverview.load_cached(cache_file)
-        new_prs = pr_overview.determine_new_pull_requests_to_review(previous_pr_status)
+        if len(pr_overview.exceptions) > 0:
+            print_and_log_exceptions(pr_overview.exceptions)
 
         if notifications_enabled:
+            previous_pr_status = PullRequestsOverview.load_cached(cache_file)
+            new_prs = pr_overview.determine_new_pull_requests_to_review(previous_pr_status)
             for pr in new_prs:
-                send_notification_new_pr(pr.slug, pr.from_ref, pr.to_ref, pr.title, 'assets/pr-logo.png', pr.href)
+                send_notification_new_pr(pr.slug, pr.from_ref, pr.to_ref, pr.title, pr.href)
 
         pr_overview.store(cache_file)
+    else:
+        print(f"? | templateImage={Icons.PULL_REQUEST.base64_image}")
+        print_and_log_exceptions(pr_overview.exceptions)
+
+
+def print_and_log_exceptions(exceptions: List[PullRequestException]):
+    for exception in exceptions:
+        # TODO log exception to file
+        print("---")
+        print(f"Error: {exception.message} |templateImage={Icons.REVIEW.base64_image}")

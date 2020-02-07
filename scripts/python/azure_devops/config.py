@@ -7,9 +7,16 @@ from ..common.icons import Icons, Icon
 from ..pull_requests import PullRequestSort, PullRequestStatus
 
 
-class AzureDevOpsConfig(object):
+class AzureDevOpsConstants(object):
     MODULE = "azure_devops"
-    _config = AppConfigReader.read(MODULE)
+
+    TIMEOUT_MESSAGE = "Timeout while trying to connect to Azure DevOps."
+    CONNECTION_MESSAGE = "Failed to connect to Azure DevOps."
+    UNKNOWN_MESSAGE = "An unknown exception occurred while trying to fetch PRs."
+
+
+class AzureDevOpsConfig(object):
+    _config = AppConfigReader.read(AzureDevOpsConstants.MODULE)
 
     ORGANIZATION_URL = f'https://dev.azure.com/{_config["preferences"]["organization"]}'
     PERSONAL_ACCESS_TOKEN = _config['preferences']['personal_access_token']

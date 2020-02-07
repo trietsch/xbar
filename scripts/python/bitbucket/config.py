@@ -6,9 +6,16 @@ from ..common.icons import Icon, Icons
 from ..pull_requests import PullRequestSort, PullRequestStatus
 
 
-class BitbucketConfig(object):
+class BitbucketConstants(object):
     MODULE = "bitbucket"
-    _config = AppConfigReader.read(MODULE)
+
+    TIMEOUT_MESSAGE = "Timeout while trying to connect to Bitbucket host."
+    CONNECTION_MESSAGE = "Failed to connect to Bitbucket host."
+    UNKNOWN_MESSAGE = "An unknown exception occurred while trying to fetch PRs."
+
+
+class BitbucketConfig(object):
+    _config = AppConfigReader.read(BitbucketConstants.MODULE)
 
     BITBUCKET_HOST = _config['preferences']['bitbucket_host']
     PRIVATE_TOKEN = _config['preferences']['private_token']
@@ -20,6 +27,7 @@ class BitbucketConfig(object):
 
     BITBUCKET_API_PULL_REQUESTS = '/rest/api/1.0/dashboard/pull-requests'
     CACHE_FILE = _config['common']['cache_path']
+
 
 class BitbucketIcons(object):
     BITBUCKET = Icon(

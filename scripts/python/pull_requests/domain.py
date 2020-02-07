@@ -1,12 +1,20 @@
+import logging
 import pickle
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 PullRequestStatus = Enum('PullRequestStatus',
                          'UNAPPROVED NEEDS_WORK APPROVED REJECTED WAITING_FOR_AUTHOR NO_VOTE APPROVED_WITH_SUGGESTIONS')
 PullRequestSort = Enum('PullRequestSort', 'ACTIVITY NAME')
+
+
+@dataclass
+class PullRequestException(object):
+    source: str
+    message: str
+    exception: Exception
 
 
 @dataclass
@@ -33,17 +41,23 @@ class PullRequest(object):
 
 @dataclass
 class PullRequestsOverview(object):
+    logger = logging.getLogger(__name__)
+
     prs_to_review: List[PullRequest]
     prs_authored_with_work: List[PullRequest]
-    exception: str
+    exceptions: List[PullRequestException]
+
+    @classmethod
+    def create(cls, prs_to_review, prs_authored_with_work, exception: Optional[PullRequestException]):
+        if exception is not None:
+            return cls(prs_to_review, prs_authored_with_work, list(exception))
+        else:
+            return cls(prs_to_review, prs_authored_with_work, list())
 
     def join(self, other):
         self.prs_to_review += other.prs_to_review
         self.prs_authored_with_work += other.prs_authored_with_work
-
-        if other.exception is not None:
-            # FIXME make this a more sophisticated construct, now it breaks the Bitbar PR menu bar
-            print(f'Error while joining PullRequestsOverview: {other.exception}')
+        self.exceptions += other.exceptions
 
         return self
 

@@ -1,15 +1,13 @@
-from datetime import datetime, timezone
 from typing import List, Dict
 
-import timeago
 from azure.devops.connection import Connection
 from azure.devops.v5_1.git import GitPullRequestSearchCriteria, GitPullRequest, IdentityRefWithVote
 from msrest.authentication import BasicAuthentication
 from requests import Timeout
 
-from .config import AzureDevOpsConfig
+from .config import AzureDevOpsConfig, AzureDevOpsConstants
 from ..common.util import abbreviate_string, time_ago
-from ..pull_requests import PullRequest, PullRequestStatus, PullRequestsOverview
+from ..pull_requests import PullRequest, PullRequestStatus, PullRequestsOverview, PullRequestException
 
 
 class AzureDevOpsClientFactory(object):
@@ -35,13 +33,13 @@ class PullRequestClient(object):
         try:
             _prs_to_review = self._get_pull_request_to_be_reviewed_by(project, pr_status, user_email, team_name)
         except Timeout as e:
-            _exception = "timeout"
+            _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.TIMEOUT_MESSAGE, e)
         except ConnectionError as e:
-            _exception = "connection error"
+            _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.CONNECTION_MESSAGE, e)
         except Exception as e:
-            _exception = "unknown error"
+            _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.UNKNOWN_MESSAGE, e)
 
-        return PullRequestsOverview(_prs_to_review, _prs_authored_with_work, _exception)
+        return PullRequestsOverview.create(_prs_to_review, _prs_authored_with_work, _exception)
 
     def _get_pull_requests_for_project(self, project, pr_status) -> List[GitPullRequest]:
         return self._git_client.get_pull_requests_by_project(project,
@@ -97,6 +95,7 @@ class GitPullRequestMapper(object):
             from_ref=GitPullRequestMapper._short_ref(ado_pr.source_ref_name),
             to_ref=GitPullRequestMapper._short_ref(ado_pr.target_ref_name),
             overall_status=GitPullRequestMapper.get_reviewer_status(ado_pr.reviewers),
+            # TODO fix overall status for authored work
             activity=ado_pr.creation_date,
             time_ago=time_ago(ado_pr.creation_date),
             repo_href=repo_href,

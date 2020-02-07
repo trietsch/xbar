@@ -3,9 +3,9 @@ from typing import List
 import requests
 from requests import Timeout
 
-from .config import BitbucketConfig
+from .config import BitbucketConfig, BitbucketConstants
 from ..common.util import epoch_ms_to_datetime, abbreviate_string, time_ago
-from ..pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview
+from ..pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview, PullRequestException
 
 
 def get_open_pull_requests_to_review(_api_key, _url):
@@ -63,9 +63,9 @@ def pr_is_marked_as_needs_work(_pr):
     if PullRequestStatus.NEEDS_WORK in reviewers_status:
         _pr['overallStatus'] = PullRequestStatus.NEEDS_WORK
     elif PullRequestStatus.APPROVED not in reviewers_status:
-        _pr['overallStatus'] = PullRequestStatus.UNAPPROVED
-    else:
         _pr['overallStatus'] = PullRequestStatus.APPROVED
+    else:
+        _pr['overallStatus'] = PullRequestStatus.UNAPPROVED
 
     return _pr
 
@@ -104,10 +104,10 @@ def get_pull_request_overview(private_token: str, host: str) -> PullRequestsOver
             get_authored_pull_requests_with_work(private_token, host)
         )
     except Timeout as e:
-        _exception = "timeout"
+        _exception = PullRequestException(BitbucketConstants.MODULE, BitbucketConstants.TIMEOUT_MESSAGE, e)
     except ConnectionError as e:
-        _exception = "connection error"
+        _exception = PullRequestException(BitbucketConstants.MODULE, BitbucketConstants.CONNECTION_MESSAGE, e)
     except Exception as e:
-        _exception = "unknown error"
+        _exception = PullRequestException(BitbucketConstants.MODULE, BitbucketConstants.UNKNOWN_MESSAGE, e)
 
-    return PullRequestsOverview(_prs_to_review, _prs_authored_with_work, _exception)
+    return PullRequestsOverview.create(_prs_to_review, _prs_authored_with_work, _exception)
