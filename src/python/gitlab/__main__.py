@@ -79,9 +79,9 @@ elif status_success > 0:
 
 # Set menubar icon
 if overall_status == PipelineStatus.FAILURE:
-    print(str(status_failure) + "|image=" + GitlabIcons.STATUS[overall_status])
+    print(str(status_failure) + "|image=" + GitlabIcons.STATUS[overall_status].base64_image)
 else:
-    print("|image=" + GitlabIcons.STATUS[overall_status])
+    print("|image=" + GitlabIcons.STATUS[overall_status].base64_image)
 
 for instance in bitbar_gitlab_projects:
     # Start menu items
@@ -90,9 +90,9 @@ for instance in bitbar_gitlab_projects:
     print("---")
 
     if exception is not None:
-        print(f"{gitlab_name} - Error: {exception} |templateImage={GitlabIcons.GITLAB_LOGO}")
+        print(f"{gitlab_name} - Error: {exception} |templateImage={GitlabIcons.GITLAB_LOGO.base64_image}")
     else:
-        print(f"{gitlab_name} |templateImage={GitlabIcons.GITLAB_LOGO}")
+        print(f"{gitlab_name} |templateImage={GitlabIcons.GITLAB_LOGO.base64_image}")
 
         sorted_projects = sorted(instance['projects'], key=lambda p: p['activity'],
                                  reverse=True) if GitlabConfig.SORT_ON == 'activity' else sorted(

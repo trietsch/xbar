@@ -9,7 +9,7 @@
 
 # Settings can be found in the ../config/bitbucket-config.ini file
 # If it doesn't exist, copy the template file and fill out the details
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../src" && pwd )"
 cd "$DIR"
 
-"./python/wrapper.sh" "bitbucket"
+"./wrapper.sh" "bitbucket"

@@ -1,11 +1,15 @@
 import json
 from distutils.util import strtobool
 
-from ..common import AppConfigReader
+from ..common.config import AppConfigReader
+
+
+class GitlabConstants(object):
+    MODULE = "gitlab"
 
 
 class GitlabConfig(object):
-    _config = AppConfigReader.read("gitlab")
+    _config = AppConfigReader.read(GitlabConstants.MODULE)
 
     CHECK_MEMBERSHIP = strtobool(_config['preferences']['check_membership'])
     CHECK_STARRED_ONLY = strtobool(_config['preferences']['check_starred_only'])
