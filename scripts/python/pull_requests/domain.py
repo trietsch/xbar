@@ -50,7 +50,7 @@ class PullRequestsOverview(object):
     @classmethod
     def create(cls, prs_to_review, prs_authored_with_work, exception: Optional[PullRequestException]):
         if exception is not None:
-            return cls(prs_to_review, prs_authored_with_work, list(exception))
+            return cls(prs_to_review, prs_authored_with_work, [exception])
         else:
             return cls(prs_to_review, prs_authored_with_work, list())
 

@@ -3,7 +3,10 @@ from typing import List, Dict
 
 from .domain import PullRequest, PullRequestSort, PullRequestStatus, PullRequestsOverview, PullRequestException
 from .notification import send_notification_new_pr
+from ..common.config import get_logger
 from ..common.icons import Icon, Icons
+
+logger = get_logger(__name__, "pull_requests-menu")
 
 
 def sort_pull_requests(pull_requests: List[PullRequest], sort_on: PullRequestSort):
@@ -98,6 +101,6 @@ def print_bitbar_pull_request_menu(
 
 def print_and_log_exceptions(exceptions: List[PullRequestException]):
     for exception in exceptions:
-        # TODO log exception to file
+        logger.error(exception.exception)
         print("---")
-        print(f"Error: {exception.message} |templateImage={Icons.REVIEW.base64_image}")
+        print(f"Error: {exception.message}")
