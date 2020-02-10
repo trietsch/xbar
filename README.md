@@ -9,6 +9,12 @@ The following steps are required to run Bitbar scripts (that use Python):
 1. For the modules below, you need to install some Python dependencies: `pip install timeago python-dateutil requests azure-devops`
 1. In order to use a module, copy the template config (found in `config/<module-name>.template`) to a `.ini` file (`config/<module-name>.ini`), e.g.: `cp config/bitbucket-config.template config/bitbucket-config.ini`. **Important**, ensure that you've set the path to the python binary as part of the config file.
 
+## Update 10-02-2020
+1. Remove the `.` of each script you want to enable in `scripts`
+1. Install `azure-devops` with `pip` if you want to use the Azure Devops module
+1. Add the `[python]` section with the path to the Python binary in each `.ini` file you already created
+1. Create an `azure_devops-config.ini` file if you want to to use that module
+
 ## Modules
 ### Gitlab
 Integrates with (multiple) Gitlab hosts and shows the status like CCMenu does. At the moment, Gitlab does not offer a `cc.xml` that Jenkins does, so this is a workaround.
@@ -46,7 +52,5 @@ export PKG_CONFIG_PATH="/usr/local/opt/zlib/lib/pkgconfig"
 - Run `brew uninstall --ignore_dependencies openssl && brew install openssl && CFLAGS="-I$(brew --prefix openssl)/include" LDFLAGS="-L$(brew --prefix openssl)/lib" pyenv install 3.6.0` to successfully install Python 3.6.0. After that, you can run the `pip install` commands.
 
 ### Azure DevOps
-https://dev.azure.com/raboweb/Maui/_apis/git/pullrequests?searchCriteria.status=active
-
-
-Update readme plz!
+Show open PRs in an Azure Devops organization with a status whether you've still got PRs to review.
+To change the settings, copy the `.bitbucket-config.template` to `.bitbucket-config.ini` and adjust to your own preferences. PRs that you have marked as approved can be omitted, by setting the value in the configuration.
