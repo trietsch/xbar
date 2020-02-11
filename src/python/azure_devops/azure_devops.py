@@ -85,7 +85,7 @@ class GitPullRequestMapper(object):
 
     @staticmethod
     def _to_pull_request(ado_pr: GitPullRequest) -> PullRequest:
-        repo_href = f"{AzureDevOpsConfig.ORGANIZATION_URL}/{ado_pr.repository.project.name}/_git/{ado_pr.repository.name}"
+        repo_href = f"{AzureDevOpsConfig.ORGANIZATION_URL}/{ado_pr.repository.project.name}/_git/{ado_pr.repository.name}/pullrequests?_a=active"
         pr_href = f"{repo_href}/pullrequest/{ado_pr.pull_request_id}"
 
         return PullRequest(
