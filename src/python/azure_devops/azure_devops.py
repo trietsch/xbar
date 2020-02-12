@@ -31,7 +31,9 @@ class PullRequestClient(object):
         _exception = None
 
         try:
-            _prs_to_review = self._get_pull_request_to_be_reviewed_by(project, pr_status, user_email, team_name)
+            prs = self._get_pull_requests_for_project(project, pr_status)
+            _prs_to_review = self._get_pull_request_to_be_reviewed_by(prs, user_email, team_name)
+            _prs_authored_with_work = self._get_pull_requests_authored(prs, user_email)
         except Timeout as e:
             _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.TIMEOUT_MESSAGE, e)
         except ConnectionError as e:
@@ -45,11 +47,16 @@ class PullRequestClient(object):
         return self._git_client.get_pull_requests_by_project(project,
                                                              GitPullRequestSearchCriteria(status=pr_status))
 
-    def _get_pull_request_to_be_reviewed_by(self, project, pr_status, user_email, team_name) -> List[PullRequest]:
-        prs = self._get_pull_requests_for_project(project, pr_status)
+    @staticmethod
+    def _get_pull_requests_authored(prs: List[GitPullRequest], user_email: str) -> List[PullRequest]:
+        prs_authored = list(filter(lambda pr: user_email in pr.created_by.unique_name.lower(), prs))
+        return GitPullRequestMapper.to_pull_requests(prs_authored)
 
+    @staticmethod
+    def _get_pull_request_to_be_reviewed_by(prs: List[GitPullRequest], user_email: str, team_name: str) -> List[
+        PullRequest]:
         prs_to_review_by_user = list(filter(lambda pr:
-                                            self._is_reviewer_for_pr(
+                                            PullRequestClient._is_reviewer_for_pr(
                                                 user_email,
                                                 team_name,
                                                 pr),
@@ -57,13 +64,18 @@ class PullRequestClient(object):
 
         return GitPullRequestMapper.to_pull_requests(prs_to_review_by_user)
 
-    def _is_reviewer_for_pr(self, user_email, team_name, pr: GitPullRequest) -> bool:
-        reviewer_names = self._get_reviewer_names(pr)
+    @staticmethod
+    def _is_reviewer_for_pr(user_email, team_name, pr: GitPullRequest) -> bool:
+        reviewer_names = PullRequestClient._get_reviewer_names(pr)
 
-        return (user_email in reviewer_names['unique_names']) or any(
-            team_name in r for r in reviewer_names['display_names'])
+        return (
+                ((user_email in reviewer_names['unique_names'])
+                 or any(team_name in r for r in reviewer_names['display_names']))
+                and not (user_email in pr.created_by.unique_name.lower())
+        )
 
-    def _get_reviewer_names(self, pr: GitPullRequest) -> Dict[List[str], List[str]]:
+    @staticmethod
+    def _get_reviewer_names(pr: GitPullRequest) -> Dict[List[str], List[str]]:
         unique_names = list(map(lambda r: r.unique_name.lower(), pr.reviewers))
         display_names = list(map(lambda r: r.display_name.lower(), pr.reviewers))
 
