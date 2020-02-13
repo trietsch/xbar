@@ -6,7 +6,7 @@ from .notification import send_notification_new_pr
 from ..common.config import get_logger
 from ..common.icons import Icon, Icons
 
-logger = get_logger(__name__, "pull_requests-menu")
+logger = get_logger(__name__)
 
 
 def sort_pull_requests(pull_requests: List[PullRequest], sort_on: PullRequestSort):
@@ -42,7 +42,7 @@ def print_prs(
     for repo, repo_prs in itertools.groupby(prs_sorted_by_slug, key=lambda p: p.slug):
         repo_prs_list: List[PullRequest] = list(repo_prs)
         repo_status = determine_repo_status(repo_prs_list)
-        repo_href = repo_prs_list[0].repo_href
+        repo_href = repo_prs_list[0].all_prs_href
         print(f"{repo} ({str(len(repo_prs_list))}) | href={repo_href} image={status_icons[repo_status].base64_image}")
 
         prs_sorted_by_to_ref = sorted(repo_prs_list, key=lambda p: p.to_ref)
@@ -102,5 +102,6 @@ def print_bitbar_pull_request_menu(
 def print_and_log_exceptions(exceptions: List[PullRequestException]):
     for exception in exceptions:
         logger.error(exception.exception)
+        logger.error(exception.traceback)
         print("---")
         print(f"Error: {exception.message}")

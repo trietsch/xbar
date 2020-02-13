@@ -15,6 +15,7 @@ class PullRequestException(object):
     source: str
     message: str
     exception: Exception
+    traceback: str
 
 
 @dataclass
@@ -27,7 +28,7 @@ class PullRequest(object):
     overall_status: PullRequestStatus
     activity: datetime
     time_ago: str
-    repo_href: str
+    all_prs_href: str
     href: str
 
     def __post_init__(self):

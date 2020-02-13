@@ -9,8 +9,9 @@ from ..common.util import get_config_file
 log_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Application Support/nl.robintrietsch.bitbar")
 
 
-def get_logger(name: str, filename: str, loglevel=logging.DEBUG) -> logging.Logger:
+def get_logger(name: str, loglevel=logging.DEBUG) -> logging.Logger:
     logger = logging.getLogger(name)
+    filename = name.replace('python.', '').replace('.', '-')
 
     if not os.path.exists(log_path):
         os.makedirs(log_path)

@@ -1,3 +1,4 @@
+import traceback
 from typing import List
 
 import requests
@@ -85,7 +86,7 @@ def extract_pull_request_data(_raw_pull_requests) -> List[PullRequest]:
             overall_status=_pr['overallStatus'],
             activity=pr_activity,
             time_ago=time_ago(pr_activity),
-            repo_href=_pr['toRef']['repository']['links']['self'][0]['href'].replace('browse', 'pull-requests'),
+            all_prs_href=_pr['toRef']['repository']['links']['self'][0]['href'].replace('browse', 'pull-requests'),
             href=_pr['links']['self'][0]['href']
         ))
 
@@ -104,10 +105,13 @@ def get_pull_request_overview(private_token: str, host: str) -> PullRequestsOver
             get_authored_pull_requests_with_work(private_token, host)
         )
     except Timeout as e:
-        _exception = PullRequestException(BitbucketConstants.MODULE, BitbucketConstants.TIMEOUT_MESSAGE, e)
+        _exception = PullRequestException(BitbucketConstants.MODULE, BitbucketConstants.TIMEOUT_MESSAGE, e,
+                                          traceback.format_exc())
     except ConnectionError as e:
-        _exception = PullRequestException(BitbucketConstants.MODULE, BitbucketConstants.CONNECTION_MESSAGE, e)
+        _exception = PullRequestException(BitbucketConstants.MODULE, BitbucketConstants.CONNECTION_MESSAGE, e,
+                                          traceback.format_exc())
     except Exception as e:
-        _exception = PullRequestException(BitbucketConstants.MODULE, BitbucketConstants.UNKNOWN_MESSAGE, e)
+        _exception = PullRequestException(BitbucketConstants.MODULE, BitbucketConstants.UNKNOWN_MESSAGE, e,
+                                          traceback.format_exc())
 
     return PullRequestsOverview.create(_prs_to_review, _prs_authored_with_work, _exception)

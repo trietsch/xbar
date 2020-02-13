@@ -1,3 +1,4 @@
+import traceback
 from typing import List, Dict
 
 from azure.devops.connection import Connection
@@ -35,11 +36,14 @@ class PullRequestClient(object):
             _prs_to_review = self._get_pull_request_to_be_reviewed_by(prs, user_email, team_name)
             _prs_authored_with_work = self._get_pull_requests_authored(prs, user_email)
         except Timeout as e:
-            _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.TIMEOUT_MESSAGE, e)
+            _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.TIMEOUT_MESSAGE, e,
+                                              traceback.format_exc())
         except ConnectionError as e:
-            _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.CONNECTION_MESSAGE, e)
+            _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.CONNECTION_MESSAGE, e,
+                                              traceback.format_exc())
         except Exception as e:
-            _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.UNKNOWN_MESSAGE, e)
+            _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.UNKNOWN_MESSAGE, e,
+                                              traceback.format_exc())
 
         return PullRequestsOverview.create(_prs_to_review, _prs_authored_with_work, _exception)
 
@@ -97,7 +101,8 @@ class GitPullRequestMapper(object):
 
     @staticmethod
     def _to_pull_request(ado_pr: GitPullRequest) -> PullRequest:
-        repo_href = f"{AzureDevOpsConfig.ORGANIZATION_URL}/{ado_pr.repository.project.name}/_git/{ado_pr.repository.name}/pullrequests?_a=active"
+        repo_href = f"{AzureDevOpsConfig.ORGANIZATION_URL}/{ado_pr.repository.project.name}/_git/{ado_pr.repository.name}"
+        all_prs_href = f"{repo_href}/pullrequests?_a=active"
         pr_href = f"{repo_href}/pullrequest/{ado_pr.pull_request_id}"
 
         return PullRequest(
@@ -110,7 +115,7 @@ class GitPullRequestMapper(object):
             # TODO fix overall status for authored work?
             activity=ado_pr.creation_date,
             time_ago=time_ago(ado_pr.creation_date),
-            repo_href=repo_href,
+            all_prs_href=all_prs_href,
             href=pr_href
         )
 
