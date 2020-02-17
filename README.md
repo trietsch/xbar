@@ -6,7 +6,7 @@ The following steps are required to run Bitbar scripts (that use Python):
 1. Ensure that Bitbar is installed: `brew cask install bitbar`
 1. Open Bitbar and choose `/scripts` as the Bitbar Plugin Folder.
 1. Copy the scripts you want to enable `scripts/template` to `scripts`
-1. Make sure you have Python 3 installed (tested with `3.7.4`): `brew cask install python3`
+1. Make sure you have Python 3 installed (tested with `3.7.4`): `brew install python3`
 1. For the modules below, you need to install some Python dependencies: `pip install timeago python-dateutil requests azure-devops`
 1. In order to use a module, copy the template config (found in `config/<module-name>.template`) to a `.ini` file (`config/<module-name>.ini`), e.g.: `cp config/bitbucket-config.template config/bitbucket-config.ini`. **Important**, ensure that you've set the path to the python binary as part of the config file.
 
