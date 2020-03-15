@@ -5,8 +5,10 @@ from .domain import PullRequest, PullRequestSort, PullRequestStatus, PullRequest
 from .notification import send_notification_new_pr
 from ..common.config import get_logger
 from ..common.icons import Icon, Icons
+from ..common.util import get_absolute_path_to_repo_file
 
 logger = get_logger(__name__)
+open_multiple_urls = get_absolute_path_to_repo_file('src/open-multiple-urls.sh')
 
 
 def sort_pull_requests(pull_requests: List[PullRequest], sort_on: PullRequestSort):
@@ -47,6 +49,8 @@ def print_prs(
 
         prs_sorted_by_to_ref = sorted(repo_prs_list, key=lambda p: p.to_ref)
 
+        pr_urls = list()
+
         for to_ref, to_ref_prs in itertools.groupby(prs_sorted_by_to_ref, key=lambda p: p.to_ref):
             to_ref_prs_list: List[PullRequest] = sort_pull_requests(list(to_ref_prs), sort_on)
             print(f"--{to_ref}")
@@ -54,6 +58,18 @@ def print_prs(
             for _pr in to_ref_prs_list:
                 print(f"--{_pr.from_ref} -- {_pr.title} (#{_pr.id}) - {_pr.time_ago}" +
                       f"|href={_pr.href} image={status_icons[_pr.overall_status].base64_image}")
+
+                pr_urls.append(_pr.href)
+
+        # Alternate click (option click to open all)
+        print(
+            (f"{repo} (open {str(len(repo_prs_list))} PRs) |"
+             "alternate=true "
+             f"image={status_icons[repo_status].base64_image} "
+             f"bash={open_multiple_urls} param1='{' '.join(pr_urls)}' "
+             "terminal=false"
+             )
+        )
 
 
 def print_bitbar_pull_request_menu(
