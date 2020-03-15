@@ -5,6 +5,8 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 
+from ..common.util import zip_list_of_dicts
+
 PullRequestStatus = Enum('PullRequestStatus',
                          'UNAPPROVED NEEDS_WORK APPROVED REJECTED WAITING_FOR_AUTHOR NO_VOTE APPROVED_WITH_SUGGESTIONS')
 PullRequestSort = Enum('PullRequestSort', 'ACTIVITY NAME')
@@ -31,12 +33,21 @@ class PullRequest(object):
     all_prs_href: str
     href: str
 
+    def __eq__(self, other):
+        try:
+            return f'{self.slug}-{self.id}' == f'{other.slug}-{other.id}'
+        except AttributeError:
+            return NotImplemented
+
+    def __hash__(self):
+        return hash(f'{self.slug}-{self.id}')
+
     def __post_init__(self):
         self.id = str(self.id) if isinstance(self.id, int) else self.id
         self.overall_status = PullRequestStatus[self.overall_status] if isinstance(self.overall_status,
                                                                                    str) else self.overall_status
 
-    def get_uuid(self):
+    def _get_uuid(self):
         return f'{self.slug}-{self.id}'
 
 
@@ -62,12 +73,14 @@ class PullRequestsOverview(object):
 
         return self
 
-    def determine_new_pull_requests_to_review(self, other):
-        current = [_pr.get_uuid() for _pr in self.prs_to_review]
-        previous = [_pr.get_uuid() for _pr in other.prs_to_review]
-        new = set(current) - set(previous)
+    def determine_new_and_changed_pull_requests_to_review(self, other):
+        new = set(self.prs_to_review) - set(other.prs_to_review)
 
-        return [_pr for _pr in self.prs_to_review if _pr.get_uuid() in new]
+        current = set((pr.id, pr.overall_status) for pr in self.prs_to_review)
+        deleted = [(pr.id, pr.overall_status) for pr in (set(other.prs_to_review) - set(self.prs_to_review))]
+        changed = [pr for pr in other.prs_to_review if ((pr.id, pr.overall_status) not in current and (pr.id, pr.overall_status) not in deleted)]
+
+        return new, changed
 
     def store(self, cache_file):
         pickle.dump(self, open(cache_file, 'wb'))

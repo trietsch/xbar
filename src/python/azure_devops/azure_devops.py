@@ -111,8 +111,8 @@ class GitPullRequestMapper(object):
             slug=ado_pr.repository.name,
             from_ref=GitPullRequestMapper._short_ref(ado_pr.source_ref_name),
             to_ref=GitPullRequestMapper._short_ref(ado_pr.target_ref_name),
-            overall_status=GitPullRequestMapper.get_reviewer_status(ado_pr.reviewers),
             # TODO fix overall status for authored work?
+            overall_status=GitPullRequestMapper.get_reviewer_status(ado_pr.reviewers),
             activity=ado_pr.creation_date,
             time_ago=time_ago(ado_pr.creation_date),
             all_prs_href=all_prs_href,

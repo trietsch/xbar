@@ -2,7 +2,7 @@ import itertools
 from typing import List, Dict
 
 from .domain import PullRequest, PullRequestSort, PullRequestStatus, PullRequestsOverview, PullRequestException
-from .notification import send_notification_new_pr
+from .notification import send_notification_pr
 from ..common.config import get_logger
 from ..common.icons import Icon, Icons
 from ..common.util import get_absolute_path_to_repo_file
@@ -105,9 +105,12 @@ def print_bitbar_pull_request_menu(
 
         if notifications_enabled:
             previous_pr_status = PullRequestsOverview.load_cached(cache_file)
-            new_prs = pr_overview.determine_new_pull_requests_to_review(previous_pr_status)
-            for pr in new_prs:
-                send_notification_new_pr(pr.slug, pr.from_ref, pr.to_ref, pr.title, pr.href)
+            new, changed = pr_overview.determine_new_and_changed_pull_requests_to_review(previous_pr_status)
+            for pr in new:
+                send_notification_pr("New", pr.slug, pr.from_ref, pr.to_ref, pr.title, pr.href)
+
+            for pr in changed:
+                send_notification_pr("Changed", pr.slug, pr.from_ref, pr.to_ref, pr.title, pr.href)
 
         pr_overview.store(cache_file)
     else:
