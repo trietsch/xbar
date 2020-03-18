@@ -71,12 +71,18 @@ class PullRequestClient(object):
     @staticmethod
     def _is_reviewer_for_pr(user_email, team_name, pr: GitPullRequest) -> bool:
         reviewer_names = PullRequestClient._get_reviewer_names(pr)
+        reviewer_status = GitPullRequestMapper.get_reviewer_status(pr.reviewers)
 
-        return (
-                ((user_email in reviewer_names['unique_names'])
-                 or any(team_name in r for r in reviewer_names['display_names']))
-                and not (user_email in pr.created_by.unique_name.lower())
-        )
+        # If OMIT = True, don't show if status = Approved
+        # If OMIT = False, show all
+        is_reviewer = ((user_email in reviewer_names['unique_names']) or any(
+            team_name in r for r in reviewer_names['display_names'])) and not (
+                user_email in pr.created_by.unique_name.lower())
+
+        should_review = (AzureDevOpsConfig.OMIT_REVIEWED_AND_APPROVED and reviewer_status != PullRequestStatus.APPROVED) \
+                        or not AzureDevOpsConfig.OMIT_REVIEWED_AND_APPROVED
+
+        return is_reviewer and should_review
 
     @staticmethod
     def _get_reviewer_names(pr: GitPullRequest) -> Dict[List[str], List[str]]:

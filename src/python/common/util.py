@@ -20,7 +20,7 @@ def epoch_ms_to_datetime(epoch_ms):
 
 
 def abbreviate_string(s: str, max_characters: int):
-    return s[:max_characters] + "..." if len(s) > max_characters else s
+    return s.replace("|", "-")[:max_characters] + "..." if len(s) > max_characters else s
 
 
 def time_ago(date_time: datetime) -> str:

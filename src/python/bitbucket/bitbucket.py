@@ -50,12 +50,15 @@ def pr_should_be_reviewed_by_me(_pr):
     reviewers_filtered = list(
         filter(lambda reviewer: reviewer['user']['slug'] == BitbucketConfig.USER_SLUG, _pr['reviewers']))
 
-    if len(reviewers_filtered) > 0 and (
-            True if not BitbucketConfig.OMIT_REVIEWED_AND_APPROVED else reviewers_filtered[0][
-                                                                            'status'] != PullRequestStatus.APPROVED
-    ):
-        _pr['overallStatus'] = reviewers_filtered[0]['status']
-        return _pr
+    # If OMIT = True, don't show if status = Approved
+    # If OMIT = False, show all
+    if len(reviewers_filtered) > 0:
+        pr_status = PullRequestStatus[reviewers_filtered[0]['status']]
+
+        if (BitbucketConfig.OMIT_REVIEWED_AND_APPROVED and pr_status != PullRequestStatus.APPROVED) or \
+                not BitbucketConfig.OMIT_REVIEWED_AND_APPROVED:
+            _pr['overallStatus'] = pr_status
+            return _pr
 
 
 def pr_is_marked_as_needs_work(_pr):
