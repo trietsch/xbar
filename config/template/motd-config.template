@@ -1,5 +1,5 @@
 [python]
-python_binary = "/Users/rtrietsch/.pyenv/versions/3.7.4/bin/python"
+python_binary = "/path/to/python"
 
 [preferences]
 ical_url = https://example.com
