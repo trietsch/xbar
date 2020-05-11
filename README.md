@@ -55,3 +55,6 @@ export PKG_CONFIG_PATH="/usr/local/opt/zlib/lib/pkgconfig"
 ### Azure DevOps
 Show open PRs in an Azure Devops organization with a status whether you've still got PRs to review.
 To change the settings, copy the `.bitbucket-config.template` to `.bitbucket-config.ini` and adjust to your own preferences. PRs that you have marked as approved can be omitted, by setting the value in the configuration.
+
+### Man of the Day schedule
+Reads the MotD for today from an iCalendar feed, and shows the first name. Go the the Confluence page, subscribe to the MotD calendar and add it to the config file for the MotD (without quotes).
