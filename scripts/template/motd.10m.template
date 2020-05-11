@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# <bitbar.title>Gitlab CI (CCMenu functionality)</bitbar.title>
+# <bitbar.desc>Shows the most recent build status for your projects</bitbar.desc>
+# <bitbar.author>Robin Trietsch</bitbar.author>
+# <bitbar.author.github>trietsch</bitbar.author.github>
+# <bitbar.dependencies>python3</bitbar.dependencies>
+# <bitbar.abouturl>https://gitlab.com/trietsch/bitbar</bitbar.abouturl>
+
+# Settings can be found in the ../config/motd-config.ini file
+# If it doesn't exist, copy the template file and fill out the details
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../src" && pwd )"
+cd "$DIR"
+
+"./wrapper.sh" "motd"
