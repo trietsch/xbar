@@ -1,28 +1,26 @@
 import requests
 from arrow import Arrow
-from ics import Calendar
+from ics import Calendar, Event
 
 from .config import MotdConfig
 from .domain import MotdIcons
 
 
-def print_current_motd(_calendar: Calendar):
-    # Shift one day, as the timeline has an offset of one day
-    now_plus_one_day = Arrow.now().shift(days=1)
-    today = list(_calendar.timeline.on(now_plus_one_day))[0]
-    motd_first_name = list(today.attendees)[0].common_name.split(' ')[0]
+def print_current_motd(_timeline):
+    today = _timeline[0]
+    motd_first_name = get_attendee_name(today)
 
     print(f'MotD: {motd_first_name} | templateImage={MotdIcons.MOTD_LOGO.base64_image}')
 
 
-def print_coming_motd(_calendar: Calendar):
+def print_coming_motd(_timeline):
     try:
         motd = list()
 
-        for day in range(2, 4):
-            event = list(_calendar.timeline.on(Arrow.now().shift(days=day)))[0]
+        for day in range(1, 3):
+            event = _timeline[day]
             week_day_name = event.begin.datetime.strftime("%A")
-            upcoming_motd_first_name = list(event.attendees)[0].common_name.split(' ')[0]
+            upcoming_motd_first_name = get_attendee_name(event)
 
             motd.append(f'{week_day_name}: {upcoming_motd_first_name}')
 
@@ -35,13 +33,18 @@ def print_coming_motd(_calendar: Calendar):
         pass
 
 
+def get_attendee_name(event: Event):
+    return list(event.attendees)[0].common_name.split(' ')[0]
+
+
 if __name__ == '__main__':
     try:
         req = requests.get(MotdConfig.MOTD_ICAL_URL, timeout=5)
 
         calendar = Calendar(req.text)
+        timeline = list(calendar.timeline.start_after(Arrow.now().shift(days=-1)))
 
-        print_current_motd(calendar)
-        print_coming_motd(calendar)
+        print_current_motd(timeline)
+        print_coming_motd(timeline)
     except:
         print(f'MotD: ? | templateImage={MotdIcons.MOTD_LOGO.base64_image}')
