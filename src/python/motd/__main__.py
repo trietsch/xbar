@@ -20,9 +20,10 @@ def print_coming_motd(_timeline):
         for day in range(1, 3):
             event = _timeline[day]
             week_day_name = event.begin.datetime.strftime("%A")
+            day_of_month_and_month_name = f'{event.begin.datetime.strftime("%-d")} {event.begin.datetime.strftime("%b")}'
             upcoming_motd_first_name = get_attendee_name(event)
 
-            motd.append(f'{week_day_name}: {upcoming_motd_first_name}')
+            motd.append(f'{week_day_name} ({day_of_month_and_month_name}): {upcoming_motd_first_name}')
 
         if len(motd) != 0:
             print("---")
