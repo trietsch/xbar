@@ -100,4 +100,4 @@ for instance in bitbar_gitlab_projects:
             key=lambda p: p['name'])
 
         for project in sorted_projects:
-            print(f"{project['name']}  -  {project['time_ago']} |href={project['href']} image={project['image']}")
+            print(f"{project['name']}  -  {project['time_ago']} |href={project['href']} image={project['image'].base64_image}")
