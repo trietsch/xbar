@@ -45,6 +45,9 @@ class PullRequestClient(object):
             _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.UNKNOWN_MESSAGE, e,
                                               traceback.format_exc())
 
+        if _prs_to_review + _prs_authored_with_work == 0:
+            _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.NO_RESULTS, None)
+
         return PullRequestsOverview.create(_prs_to_review, _prs_authored_with_work, _exception)
 
     def _get_pull_requests_for_project(self, project, pr_status) -> List[GitPullRequest]:

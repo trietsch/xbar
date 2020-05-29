@@ -1,6 +1,7 @@
 import itertools
 from typing import List, Dict
 
+from .config import PullRequestsConstants
 from .domain import PullRequest, PullRequestSort, PullRequestStatus, PullRequestsOverview, PullRequestException
 from .notification import send_notification_pr
 from ..common.config import get_logger
@@ -84,13 +85,7 @@ def print_bitbar_pull_request_menu(
     total_prs = total_prs_to_review + total_prs_authored_with_work
 
     if total_prs > 0:
-        # Set menubar icon
         print(f"{str(total_prs)} | templateImage={Icons.PULL_REQUEST.base64_image}")
-
-        # Start menu items
-        if total_prs == 0:
-            print("---")
-            print(f"Nothing to review! | image={pr_statuses[PullRequestStatus.APPROVED].base64_image}")
 
         if total_prs_to_review > 0:
             print("---")
@@ -113,6 +108,11 @@ def print_bitbar_pull_request_menu(
                 send_notification_pr("Changed", pr.slug, pr.from_ref, pr.to_ref, pr.title, pr.href)
 
         pr_overview.store(cache_file)
+    elif total_prs == 0 and len(pr_overview.exceptions) == 0:
+        print(f"0 | templateImage={Icons.PULL_REQUEST.base64_image}")
+        print("---")
+        print(f"Nothing to review 🎉 | templateImage={PullRequestsConstants.NO_PULL_REQUESTS.base64_image}")
+        pr_overview.store(cache_file)
     else:
         print(f"? | templateImage={Icons.PULL_REQUEST.base64_image}")
         print_and_log_exceptions(pr_overview.exceptions)
@@ -123,4 +123,4 @@ def print_and_log_exceptions(exceptions: List[PullRequestException]):
         logger.error(exception.exception)
         logger.error(exception.traceback)
         print("---")
-        print(f"Error: {exception.message}")
+        print(f"{exception.source} error: {exception.message}")

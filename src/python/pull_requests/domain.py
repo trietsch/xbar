@@ -1,11 +1,8 @@
-import logging
 import pickle
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
-
-from ..common.util import zip_list_of_dicts
 
 PullRequestStatus = Enum('PullRequestStatus',
                          'UNAPPROVED NEEDS_WORK APPROVED REJECTED WAITING_FOR_AUTHOR NO_VOTE APPROVED_WITH_SUGGESTIONS')
@@ -53,8 +50,6 @@ class PullRequest(object):
 
 @dataclass
 class PullRequestsOverview(object):
-    logger = logging.getLogger(__name__)
-
     prs_to_review: List[PullRequest]
     prs_authored_with_work: List[PullRequest]
     exceptions: List[PullRequestException]
@@ -74,11 +69,17 @@ class PullRequestsOverview(object):
         return self
 
     def determine_new_and_changed_pull_requests_to_review(self, other):
-        new = set(self.prs_to_review) - set(other.prs_to_review)
+        new = list(filter(lambda pr: pr.id not in [_pr.id for _pr in other.prs_to_review], self.prs_to_review))
 
-        current = set((pr.id, pr.overall_status) for pr in self.prs_to_review)
-        deleted = [(pr.id, pr.overall_status) for pr in (set(other.prs_to_review) - set(self.prs_to_review))]
-        changed = [pr for pr in other.prs_to_review if ((pr.id, pr.overall_status) not in current and (pr.id, pr.overall_status) not in deleted)]
+        new_id_status_pairs = [(_pr.id, _pr.overall_status) for _pr in new]
+        current_without_new = filter(lambda pr: (pr.id, pr.overall_status) not in new_id_status_pairs,
+                                     self.prs_to_review)
+
+        previous_id_status_pairs = [(_pr.id, _pr.overall_status) for _pr in other.prs_to_review]
+        # Consider a PR to be changed if a reviewer's vote has been reset
+        changed = list(filter(lambda pr: pr.overall_status == PullRequestStatus.UNAPPROVED and
+                                         (pr.id, pr.overall_status) not in previous_id_status_pairs,
+                              current_without_new))
 
         return new, changed
 
