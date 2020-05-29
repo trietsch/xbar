@@ -22,9 +22,9 @@ def determine_repo_status(prs_list: List[PullRequest]):
 
     if PullRequestStatus.REJECTED in statuses:
         return PullRequestStatus.REJECTED
-    elif (PullRequestStatus.UNAPPROVED or PullRequestStatus.NO_VOTE) in statuses:
+    elif PullRequestStatus.UNAPPROVED in statuses or PullRequestStatus.NO_VOTE in statuses:
         return PullRequestStatus.UNAPPROVED
-    elif (PullRequestStatus.NEEDS_WORK or PullRequestStatus.WAITING_FOR_AUTHOR) in statuses:
+    elif PullRequestStatus.NEEDS_WORK in statuses or PullRequestStatus.WAITING_FOR_AUTHOR in statuses:
         return PullRequestStatus.NEEDS_WORK
     else:  # Approved / Approved with suggestions
         return PullRequestStatus.APPROVED
