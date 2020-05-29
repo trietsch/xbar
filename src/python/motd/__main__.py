@@ -40,7 +40,7 @@ def get_attendee_name(event: Event):
 
 if __name__ == '__main__':
     try:
-        req = requests.get(MotdConfig.MOTD_ICAL_URL, timeout=5)
+        req = requests.get(MotdConfig.MOTD_ICAL_URL, timeout=MotdConfig.REQUEST_TIMEOUT)
 
         calendar = Calendar(req.text)
         timeline = list(calendar.timeline.start_after(Arrow.now().shift(days=-1)))

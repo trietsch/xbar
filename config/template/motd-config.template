@@ -3,3 +3,4 @@ python_binary = "/path/to/python"
 
 [preferences]
 ical_url = https://example.com
+request_timeout_seconds = 15
