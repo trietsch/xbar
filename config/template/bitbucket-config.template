@@ -2,10 +2,10 @@
 python_binary = "/path/to/python"
 
 [preferences]
-bitbucket_host = # fill out, i.e. https://git.rabobank.nl
+bitbucket_host = # fill out
 private_token = # fill out
 
-user_slug = # fill out, i.e. trietsr
+user_slug = # fill out
 
 # 'name' or 'activity'
 sort_on = activity
