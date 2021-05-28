@@ -46,5 +46,6 @@ class AzureDevOpsIcons(object):
         PullRequestStatus.NO_VOTE: Icons.GREY_CIRCLE,
         PullRequestStatus.UNAPPROVED: Icons.GREY_CIRCLE,
         PullRequestStatus.APPROVED_WITH_SUGGESTIONS: Icons.GREEN_CIRCLE,
-        PullRequestStatus.APPROVED: Icons.GREEN_CIRCLE
+        PullRequestStatus.APPROVED: Icons.GREEN_CIRCLE,
+        PullRequestStatus.NEEDS_WORK: Icons.ORANGE_CIRCLE
     }
