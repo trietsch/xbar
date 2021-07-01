@@ -24,7 +24,7 @@ class AzureDevOpsConfig(object):
     PROJECTS = json.loads(_config['preferences']['projects'])
     PULL_REQUEST_STATUS = _config['preferences']['pull_request_status']
     USER_EMAIL = _config['preferences']['user_email'].lower()
-    TEAM_NAME = _config['preferences']['team_name'].lower()
+    TEAM_NAMES = [name.lower() for name in (json.loads(_config['preferences']['team_names']))]
 
     SORT_ON = PullRequestSort[_config['preferences']['sort_on'].upper()]
     ABBREVIATION_CHARACTERS = int(_config['preferences']['abbreviation_characters'])

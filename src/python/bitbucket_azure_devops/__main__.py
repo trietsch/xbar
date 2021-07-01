@@ -4,10 +4,10 @@ from ..bitbucket import get_pull_request_overview, BitbucketConfig, BitbucketIco
 from ..pull_requests import print_bitbar_pull_request_menu
 
 azure_devops_prs = PullRequestClient().get_pull_requests_overview(
-    AzureDevOpsConfig.PROJECTS[0],  # TODO add multi project support
+    AzureDevOpsConfig.PROJECTS,
     AzureDevOpsConfig.PULL_REQUEST_STATUS,
     AzureDevOpsConfig.USER_EMAIL,
-    AzureDevOpsConfig.TEAM_NAME
+    AzureDevOpsConfig.TEAM_NAMES
 )
 
 bitbucket_prs = get_pull_request_overview(

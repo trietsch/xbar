@@ -26,15 +26,19 @@ class PullRequestClient(object):
     def __init__(self):
         self._git_client = AzureDevOpsClientFactory.get_git_client()
 
-    def get_pull_requests_overview(self, project, pr_status, user_email, team_name) -> PullRequestsOverview:
+    def get_pull_requests_overview(self, projects, pr_status, user_email, team_names) -> PullRequestsOverview:
         _prs_to_review: List[PullRequest] = []
         _prs_authored_with_work: List[PullRequest] = []
         _exception = None
 
         try:
-            prs = self._get_pull_requests_for_project(project, pr_status)
-            _prs_to_review = self._get_pull_request_to_be_reviewed_by(prs, user_email, team_name)
-            _prs_authored_with_work = self._get_pull_requests_authored(prs, user_email)
+            joined_prs = []
+            for project in projects:
+                # print("Query for project " + project)
+                joined_prs.extend(self._get_pull_requests_for_project(project, pr_status))
+
+            _prs_to_review = self._get_pull_request_to_be_reviewed_by(joined_prs, user_email, team_names)
+            _prs_authored_with_work = self._get_pull_requests_authored(joined_prs, user_email)
         except Timeout as e:
             _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.TIMEOUT_MESSAGE, e,
                                               traceback.format_exc())
@@ -60,26 +64,25 @@ class PullRequestClient(object):
         return GitPullRequestMapper.to_pull_requests(prs_authored)
 
     @staticmethod
-    def _get_pull_request_to_be_reviewed_by(prs: List[GitPullRequest], user_email: str, team_name: str) -> List[
-        PullRequest]:
+    def _get_pull_request_to_be_reviewed_by(prs: List[GitPullRequest], user_email: str, team_names: List[str]) -> List[PullRequest]:
         prs_to_review_by_user = list(filter(lambda pr:
                                             PullRequestClient._is_reviewer_for_pr(
                                                 user_email,
-                                                team_name,
+                                                team_names,
                                                 pr),
                                             prs))
 
         return GitPullRequestMapper.to_pull_requests(prs_to_review_by_user)
 
     @staticmethod
-    def _is_reviewer_for_pr(user_email, team_name, pr: GitPullRequest) -> bool:
+    def _is_reviewer_for_pr(user_email, team_names, pr: GitPullRequest) -> bool:
         reviewer_names = PullRequestClient._get_reviewer_names(pr)
         reviewer_status = GitPullRequestMapper.get_reviewer_status(pr.reviewers)
 
         # If OMIT = True, don't show if status = Approved
         # If OMIT = False, show all
         is_reviewer = ((user_email in reviewer_names['unique_names']) or any(
-            team_name in r for r in reviewer_names['display_names'])) and not (
+            team_name in reviewer_name for reviewer_name in reviewer_names['display_names'] for team_name in team_names)) and not (
                 user_email in pr.created_by.unique_name.lower())
 
         should_review = (AzureDevOpsConfig.OMIT_REVIEWED_AND_APPROVED and reviewer_status != PullRequestStatus.APPROVED) \
