@@ -4,6 +4,8 @@ python_binary = "/path/to/python"
 [preferences]
 check_starred_only = True
 check_membership = True
+# Only show projects with pipelines
+only_projects_with_pipelines = True
 # 'name' or 'activity'
 sort_on = activity
 # Names must match the sections below exactly

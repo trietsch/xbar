@@ -13,6 +13,7 @@ class GitlabConfig(object):
 
     CHECK_MEMBERSHIP = strtobool(_config['preferences']['check_membership'])
     CHECK_STARRED_ONLY = strtobool(_config['preferences']['check_starred_only'])
+    ONLY_PROJECTS_WITH_PIPELINES = _config['preferences']['only_projects_with_pipelines']
     SORT_ON = _config['preferences']['sort_on']
 
     API_PROJECTS = '/api/v4/projects'

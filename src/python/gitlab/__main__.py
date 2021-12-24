@@ -25,14 +25,16 @@ for instance in GitlabConfig.GITLAB_HOSTS:
         for project in projects:
             project_id = project['id']
             project_name_and_path = project['path_with_namespace']
-            project_href = project['web_url'] + "/pipelines"
             project_activity = dateutil.parser.parse(project['last_activity_at'])
 
-            pipeline_status = get_most_recent_project_pipeline_status(
+            pipeline_status, web_url = get_most_recent_project_pipeline_status(
                 private_token,
                 host,
                 project_id
             )
+
+            if GitlabConfig.ONLY_PROJECTS_WITH_PIPELINES and pipeline_status == PipelineStatus.INACTIVE:
+                continue
 
             if pipeline_status == PipelineStatus.FAILURE_BUILDING:
                 status_failure_building += 1
@@ -48,7 +50,7 @@ for instance in GitlabConfig.GITLAB_HOSTS:
                 name=project_name_and_path,
                 activity=project_activity,
                 time_ago=time_ago(project_activity),
-                href=project_href,
+                href=web_url,
                 status=pipeline_status,
                 image=GitlabIcons.STATUS[pipeline_status]
             ))
