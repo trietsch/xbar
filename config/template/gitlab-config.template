@@ -8,17 +8,19 @@ check_membership = True
 only_projects_with_pipelines = True
 # 'name' or 'activity'
 sort_on = activity
+# limit to projects with activity in the last x weeks
+only_projects_last_weeks = 2
 # Names must match the sections below exactly
 gitlab_hosts = ["Gitlab host one","Gitlab host two","Gitlab"]
 
-[Gitlab tools]
+[Gitlab host one]
 host = https://gitlab.myorg.com
-private_token = 
+private_token =
 
 [Gitlab host two]
 host = https://gitlab2.myorg.com
-private_token = 
+private_token =
 
 [Gitlab]
 host = https://gitlab.com
-private_token = 
+private_token =

@@ -1,18 +1,24 @@
+from datetime import datetime, timedelta
+
 import requests
 
 from . import PipelineStatus, GitlabConfig, GitlabCiStatus
 
 
-def get_projects(api_key, url):
+def get_projects(api_key, url, only_projects_last_weeks):
     """
     Parse all pages of projects
     :return: list
     """
-    return get_project_page(api_key, url, 1, [])
+    if only_projects_last_weeks is not None:
+        last_activity_after = (datetime.today() - timedelta(weeks=2)).replace(microsecond=0).isoformat() + 'Z'
+        return get_project_page(api_key, url, last_activity_after, 1, [])
+    else:
+        return get_project_page(api_key, url, None, 1, [])
 
 
 # Get projects and print build status
-def get_project_page(_api_key, _url, _page, _projects):
+def get_project_page(_api_key, _url, _last_activity_after, _page, _projects):
     params = dict(
         private_token=_api_key,
         per_page=100,
@@ -21,6 +27,9 @@ def get_project_page(_api_key, _url, _page, _projects):
         starred=GitlabConfig.CHECK_STARRED_ONLY,
         simple='true'
     )
+    if _last_activity_after is not None:
+        params['last_activity_after'] = _last_activity_after
+
     r = requests.get(_url + GitlabConfig.API_PROJECTS, params=params, timeout=5)
 
     # Parse the JSON returned by GitLab and extract the projects
@@ -28,7 +37,7 @@ def get_project_page(_api_key, _url, _page, _projects):
 
     nextpage = r.headers.get('X-Next-Page')
     if nextpage:
-        result = get_project_page(_api_key, _url, nextpage, result)
+        result = get_project_page(_api_key, _url, _last_activity_after, nextpage, result)
 
     return result
 
@@ -58,8 +67,8 @@ def get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _elemen
         # Current is running, previous is successful
         if ((current_job_status == GitlabCiStatus.running.name or
              current_job_status == GitlabCiStatus.pending.name) and
-                (previous_job_status == GitlabCiStatus.success.name or
-                 previous_job_status == GitlabCiStatus.manual.name)):
+            (previous_job_status == GitlabCiStatus.success.name or
+             previous_job_status == GitlabCiStatus.manual.name)):
             return PipelineStatus.SUCCESS_BUILDING, current_job_web_url
         elif ((current_job_status == GitlabCiStatus.running.name or
                current_job_status == GitlabCiStatus.pending.name) and

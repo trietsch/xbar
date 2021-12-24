@@ -20,7 +20,7 @@ for instance in GitlabConfig.GITLAB_HOSTS:
     gitlab_instance_projects = []
 
     try:
-        projects = get_projects(private_token, host)
+        projects = get_projects(private_token, host, GitlabConfig.ONLY_PROJECTS_LAST_WEEKS)
 
         for project in projects:
             project_id = project['id']
