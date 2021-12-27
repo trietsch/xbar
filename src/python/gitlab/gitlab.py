@@ -80,12 +80,14 @@ def get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _elemen
             return PipelineStatus.FAILURE, current_job_web_url
         elif current_job_status == GitlabCiStatus.manual.name:
             return PipelineStatus.MANUAL, current_job_web_url
+        elif current_job_status == GitlabCiStatus.running.name:
+            return PipelineStatus.SUCCESS_BUILDING, current_job_web_url
         # Exclude cancelled and skipped pipelines
         elif current_job_status == GitlabCiStatus.canceled.name or current_job_status == GitlabCiStatus.skipped.name:
             return get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _element_index + 1)
         else:
-            # For debugging purposes
-            print("Current Job Status: " + current_job_status)
+            # Unhandled pipeline statuses end up here
+            return PipelineStatus.ERROR, current_job_status
 
     elif len(result) == 1:
         current_job_status = result[_element_index]['status'].lower()
