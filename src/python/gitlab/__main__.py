@@ -85,6 +85,19 @@ if overall_status == PipelineStatus.FAILURE:
 else:
     print("|image=" + GitlabIcons.STATUS[overall_status].base64_image)
 
+if status_failure_building > 0 :
+    print(str(status_failure_building) + "|image=" +
+            GitlabIcons.STATUS[PipelineStatus.FAILURE_BUILDING].base64_image)
+if status_success_building > 0 :
+    print(str(status_success_building) + "|image=" +
+            GitlabIcons.STATUS[PipelineStatus.SUCCESS_BUILDING].base64_image)
+if status_failure > 0 :
+    print(str(status_failure) + "|image=" +
+            GitlabIcons.STATUS[PipelineStatus.FAILURE].base64_image)
+if status_success > 0 :
+    print(str(status_success) + "|image=" +
+            GitlabIcons.STATUS[PipelineStatus.SUCCESS].base64_image)
+
 for instance in bitbar_gitlab_projects:
     # Start menu items
     gitlab_name = instance['gitlab_name']
