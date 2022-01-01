@@ -1,5 +1,6 @@
 import dateutil.parser
 from requests import Timeout
+from collections import defaultdict
 
 from . import GitlabConfig, PipelineStatus, get_projects, get_most_recent_project_pipeline_status, GitlabIcons
 from ..common.util import time_ago
@@ -8,10 +9,7 @@ overall_status = PipelineStatus.INACTIVE
 bitbar_gitlab_projects = []
 
 # Overall status counters
-status_failure_building = 0
-status_success_building = 0
-status_failure = 0
-status_success = 0
+statuses = defaultdict(int)
 
 for instance in GitlabConfig.GITLAB_HOSTS:
     host = instance['host']
@@ -35,15 +33,7 @@ for instance in GitlabConfig.GITLAB_HOSTS:
 
             if GitlabConfig.ONLY_PROJECTS_WITH_PIPELINES and pipeline_status == PipelineStatus.INACTIVE:
                 continue
-
-            if pipeline_status == PipelineStatus.FAILURE_BUILDING:
-                status_failure_building += 1
-            elif pipeline_status == PipelineStatus.SUCCESS_BUILDING:
-                status_success_building += 1
-            elif pipeline_status == PipelineStatus.FAILURE:
-                status_failure += 1
-            elif pipeline_status == PipelineStatus.SUCCESS:
-                status_success += 1
+            statuses[pipeline_status] += 1
 
             gitlab_instance_projects.append(dict(
                 id=project_id,
@@ -70,33 +60,9 @@ for instance in GitlabConfig.GITLAB_HOSTS:
         continue
 
 # Now construct the bitbar menu
-if status_failure_building > 0:
-    overall_status = PipelineStatus.FAILURE_BUILDING
-elif status_success_building > 0:
-    overall_status = PipelineStatus.SUCCESS_BUILDING
-elif status_failure > 0:
-    overall_status = PipelineStatus.FAILURE
-elif status_success > 0:
-    overall_status = PipelineStatus.SUCCESS
 
-# Set menubar icon
-if overall_status == PipelineStatus.FAILURE:
-    print(str(status_failure) + "|image=" + GitlabIcons.STATUS[overall_status].base64_image)
-else:
-    print("|image=" + GitlabIcons.STATUS[overall_status].base64_image)
-
-if status_failure_building > 0 :
-    print(str(status_failure_building) + "|image=" +
-            GitlabIcons.STATUS[PipelineStatus.FAILURE_BUILDING].base64_image)
-if status_success_building > 0 :
-    print(str(status_success_building) + "|image=" +
-            GitlabIcons.STATUS[PipelineStatus.SUCCESS_BUILDING].base64_image)
-if status_failure > 0 :
-    print(str(status_failure) + "|image=" +
-            GitlabIcons.STATUS[PipelineStatus.FAILURE].base64_image)
-if status_success > 0 :
-    print(str(status_success) + "|image=" +
-            GitlabIcons.STATUS[PipelineStatus.SUCCESS].base64_image)
+for k,v in statuses.items():
+    print(str(v) + "|image=" + GitlabIcons.STATUS[k].base64_image)
 
 for instance in bitbar_gitlab_projects:
     # Start menu items
