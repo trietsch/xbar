@@ -60,9 +60,17 @@ for instance in GitlabConfig.GITLAB_HOSTS:
         continue
 
 # Now construct the bitbar menu
+if GitlabConfig.ALTERNATE_HEADER:
+    for k,v in statuses.items():
+        print(str(v) + "|image=" + GitlabIcons.STATUS[k].base64_image)
+else:
+    failures = statuses.get(PipelineStatus.FAILURE,0)
+    if failures > 0:
+        print(str(failures) + "|image=" + \
+                GitlabIcons.STATUS[PipelineStatus.FAILURE].base64_image)
+    else:
+        print("|image=" + GitlabIcons.STATUS[PipelineStatus.SUCCESS].base64_image)
 
-for k,v in statuses.items():
-    print(str(v) + "|image=" + GitlabIcons.STATUS[k].base64_image)
 
 for instance in bitbar_gitlab_projects:
     # Start menu items

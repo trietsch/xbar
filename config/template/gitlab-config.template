@@ -8,6 +8,8 @@ check_membership = True
 only_projects_with_pipelines = True
 # 'name' or 'activity'
 sort_on = activity
+sort_reverse = False
+alternate_header = False
 # limit to projects with activity in the last x weeks
 only_projects_last_weeks = 2
 # Names must match the sections below exactly
