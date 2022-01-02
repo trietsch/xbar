@@ -75,10 +75,8 @@ for instance in bitbar_gitlab_projects:
     else:
         print(f"{gitlab_name} |templateImage={GitlabIcons.GITLAB_LOGO.base64_image}")
 
-        sorted_projects = sorted(instance['projects'], key=lambda p: p['activity'],
-                                 reverse=True) if GitlabConfig.SORT_ON == 'activity' else sorted(
-            instance['projects'],
-            key=lambda p: p['name'])
+        sorted_projects = sorted(instance['projects'], key=lambda p:
+                str(p[GitlabConfig.SORT_ON]), reverse=GitlabConfig.SORT_REVERSE)
 
         for project in sorted_projects:
             print(f"{project['name']}  -  {project['time_ago']} |href={project['href']} image={project['image'].base64_image}")

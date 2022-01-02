@@ -17,6 +17,7 @@ class GitlabConfig(object):
     ONLY_PROJECTS_LAST_WEEKS = _config['preferences'].get('only_projects_last_weeks', None)
 
     SORT_ON = _config['preferences'].get('sort_on', 'activity')
+    SORT_REVERSE = strtobool(_config['preferences'].get('sort_reverse', "False"))
 
     API_PROJECTS = '/api/v4/projects'
     API_PIPELINES = '/pipelines'
