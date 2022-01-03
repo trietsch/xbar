@@ -1,11 +1,11 @@
 # xbar (previously xbar) scripts
 This repo contains my personal xbar scripts. Feel free to use, fork, modify, or tweak them to meet your needs! If you find any issues, you can report them in this Gitlab project. Merge requests are appreciated.
 
-Note that these scripts (probably) also work with [kargos](https://github.com/lipido/kargos) for Unix systems.
+Note that these scripts (probably) also work with [argos](https://github.com/p-e-w/argos/blob/master/README.md) and [kargos](https://github.com/lipido/kargos) for Unix systems.
 
 ## Installation
 The following steps are required to run xbar scripts (that use Python):
-1. Ensure that xbar (or kargos) is installed: `brew cask install xbar` or follow the installation instructions for [kargos](https://github.com/lipido/kargos)
+1. Ensure that xbar (or kargos) is installed: `brew cask install xbar` or follow the installation instructions for the application that can run xbar scripts.
 1. Open xbar and choose `/scripts` as the xbar Plugin Folder.
 1. Copy the scripts you want to enable `scripts/template` to `scripts`, and make sure to remove `.template` from the filename.
 1. Make sure you have Python 3 installed (tested with `3.7.4`): `brew install python3`
