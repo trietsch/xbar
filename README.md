@@ -1,7 +1,7 @@
 # xbar (previously BitBar) scripts
 This repo contains my personal xbar scripts. Feel free to use, fork, modify, or tweak them to meet your needs! If you find any issues, you can report them in this Gitlab project. Merge requests are appreciated.
 
-Note that these scripts (probably) also work with [argos](https://github.com/p-e-w/argos/blob/master/README.md) and [kargos](https://github.com/lipido/kargos) for Unix systems.
+Note that these scripts (probably) also work with [argos](https://github.com/p-e-w/argos) and [kargos](https://github.com/lipido/kargos) for Unix systems.
 
 ## Installation
 The following steps are required to run xbar scripts (that use Python):
