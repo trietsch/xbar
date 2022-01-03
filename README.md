@@ -1,16 +1,18 @@
-# Bitbar scripts
-This repo contains my personal Bitbar scripts. Feel free to use, fork, modify, or tweak them to meet your needs! If you find any issues, you can report them in this Gitlab project. Merge requests are appreciated.
+# xbar (previously xbar) scripts
+This repo contains my personal xbar scripts. Feel free to use, fork, modify, or tweak them to meet your needs! If you find any issues, you can report them in this Gitlab project. Merge requests are appreciated.
+
+Note that these scripts (probably) also work with [kargos](https://github.com/lipido/kargos) for Unix systems.
 
 ## Installation
-The following steps are required to run Bitbar scripts (that use Python):
-1. Ensure that Bitbar is installed: `brew cask install bitbar`
-1. Open Bitbar and choose `/scripts` as the Bitbar Plugin Folder.
+The following steps are required to run xbar scripts (that use Python):
+1. Ensure that xbar (or kargos) is installed: `brew cask install xbar` or follow the installation instructions for [kargos](https://github.com/lipido/kargos)
+1. Open xbar and choose `/scripts` as the xbar Plugin Folder.
 1. Copy the scripts you want to enable `scripts/template` to `scripts`, and make sure to remove `.template` from the filename.
 1. Make sure you have Python 3 installed (tested with `3.7.4`): `brew install python3`
 1. For the modules below, you need to install some Python dependencies: `pip install timeago python-dateutil requests azure-devops ics`
 1. In order to use a module, copy the template config (found in `config/template/<module-name>.template`) to `config/<module-name>.ini`, e.g.: `cp config/template/bitbucket-config.template config/bitbucket-config.ini`.
 
-## Modules
+## Scripts
 ### Gitlab
 Integrates with (multiple) Gitlab hosts and shows the status like CCMenu does. At the moment, Gitlab does not offer a `cc.xml` that Jenkins does, so this is a workaround.
 

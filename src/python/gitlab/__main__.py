@@ -1,6 +1,7 @@
+from collections import defaultdict
+
 import dateutil.parser
 from requests import Timeout
-from collections import defaultdict
 
 from . import GitlabConfig, PipelineStatus, get_projects, get_most_recent_project_pipeline_status, GitlabIcons
 from ..common.util import time_ago
@@ -61,16 +62,15 @@ for instance in GitlabConfig.GITLAB_HOSTS:
 
 # Now construct the bitbar menu
 if GitlabConfig.ALTERNATE_HEADER:
-    for k,v in statuses.items():
+    for k, v in statuses.items():
         print(str(v) + "|image=" + GitlabIcons.STATUS[k].base64_image)
 else:
-    failures = statuses.get(PipelineStatus.FAILURE,0)
+    failures = statuses.get(PipelineStatus.FAILURE, 0)
     if failures > 0:
         print(str(failures) + "|image=" + \
-                GitlabIcons.STATUS[PipelineStatus.FAILURE].base64_image)
+              GitlabIcons.STATUS[PipelineStatus.FAILURE].base64_image)
     else:
         print("|image=" + GitlabIcons.STATUS[PipelineStatus.SUCCESS].base64_image)
-
 
 for instance in bitbar_gitlab_projects:
     # Start menu items
@@ -84,7 +84,8 @@ for instance in bitbar_gitlab_projects:
         print(f"{gitlab_name} |templateImage={GitlabIcons.GITLAB_LOGO.base64_image}")
 
         sorted_projects = sorted(instance['projects'], key=lambda p:
-                str(p[GitlabConfig.SORT_ON]), reverse=GitlabConfig.SORT_REVERSE)
+        str(p[GitlabConfig.SORT_ON]), reverse=GitlabConfig.SORT_REVERSE)
 
         for project in sorted_projects:
-            print(f"{project['name']}  -  {project['time_ago']} |href={project['href']} image={project['image'].base64_image}")
+            print(
+                f"{project['name']}  -  {project['time_ago']} |href={project['href']} image={project['image'].base64_image}")
