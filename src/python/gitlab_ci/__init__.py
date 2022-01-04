@@ -1,3 +1,3 @@
 from .config import GitlabConfig
 from .domain import *
-from .gitlab import *
+from .gitlab_ci import *

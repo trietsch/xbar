@@ -62,7 +62,8 @@ def get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _elemen
     elif len(result) > 1:
         current_job_status = result[_element_index]['status'].lower()
         current_job_web_url = result[_element_index]['web_url']
-        previous_job_status = result[_element_index + 1]['status'].lower()
+        previous_job_status = GitlabCiStatus.unknown.name if _element_index + 1 >= len(result) else \
+            result[_element_index + 1]['status'].lower()
 
         # Current is running, previous is successful
         if ((current_job_status == GitlabCiStatus.running.name or
@@ -82,9 +83,14 @@ def get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _elemen
             return PipelineStatus.MANUAL, current_job_web_url
         elif current_job_status == GitlabCiStatus.running.name:
             return PipelineStatus.SUCCESS_BUILDING, current_job_web_url
-        # Exclude cancelled and skipped pipelines
         elif current_job_status == GitlabCiStatus.canceled.name or current_job_status == GitlabCiStatus.skipped.name:
-            return get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _element_index + 1)
+            # Exclude cancelled and skipped pipelines, i.e. go to the next pipeline
+            # Verify whether it's actually possible to retrieve the next element
+            next_index = _element_index + 1
+            if next_index >= len(result) - 1:  # if there is no next element, fall back to unknown
+                return PipelineStatus.UNKNOWN, ""
+
+            return get_most_recent_project_pipeline_status(_api_key, _url, _project_id, next_index)
         else:
             # Unhandled pipeline statuses end up here
             return PipelineStatus.ERROR, current_job_status
