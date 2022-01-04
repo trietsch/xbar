@@ -5,7 +5,7 @@
 # <bitbar.author>Robin Trietsch</bitbar.author>
 # <bitbar.author.github>trietsch</bitbar.author.github>
 # <bitbar.dependencies>python3</bitbar.dependencies>
-# <bitbar.abouturl>https://gitlab.com/trietsch/bitbar</bitbar.abouturl>
+# <bitbar.abouturl>https://github.com/trietsch/xbar</bitbar.abouturl>
 
 # Settings can be found in the ../config/azure_devops-config.ini file
 # If it doesn't exist, copy the template file and fill out the details

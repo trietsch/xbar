@@ -5,7 +5,7 @@ from ..common.config import AppConfigReader
 
 
 class GitlabConstants(object):
-    MODULE = "gitlab"
+    MODULE = "gitlab_ci"
 
 
 class GitlabConfig(object):
