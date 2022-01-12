@@ -65,11 +65,17 @@ if GitlabConfig.ALTERNATE_HEADER:
     for k, v in statuses.items():
         print(str(v) + "|image=" + GitlabIcons.STATUS[k].base64_image)
 else:
-    failures = statuses.get(PipelineStatus.FAILURE, 0)
-    if failures > 0:
-        print(str(failures) + "|image=" + \
+    # Print the current active overall status
+    if statuses.get(PipelineStatus.FAILURE_BUILDING, 0) > 0:
+        print(str(statuses.get(PipelineStatus.FAILURE_BUILDING, 0)) + "|image=" +
+              GitlabIcons.STATUS[PipelineStatus.FAILURE_BUILDING].base64_image)
+    elif statuses.get(PipelineStatus.SUCCESS_BUILDING, 0) > 0:
+        print(str(statuses.get(PipelineStatus.SUCCESS_BUILDING, 0)) + "|image=" +
+              GitlabIcons.STATUS[PipelineStatus.SUCCESS_BUILDING].base64_image)
+    elif statuses.get(PipelineStatus.FAILURE, 0) > 0:
+        print(str(statuses.get(PipelineStatus.FAILURE, 0)) + "|image=" +
               GitlabIcons.STATUS[PipelineStatus.FAILURE].base64_image)
-    else:
+    elif statuses.get(PipelineStatus.SUCCESS, 0) > 0:
         print("|image=" + GitlabIcons.STATUS[PipelineStatus.SUCCESS].base64_image)
 
 for instance in bitbar_gitlab_projects:
@@ -83,8 +89,9 @@ for instance in bitbar_gitlab_projects:
     else:
         print(f"{gitlab_name} |templateImage={GitlabIcons.GITLAB_LOGO.base64_image}")
 
-        sorted_projects = sorted(instance['projects'], key=lambda p:
-        str(p[GitlabConfig.SORT_ON]), reverse=GitlabConfig.SORT_REVERSE)
+        sorted_projects = sorted(instance['projects'],
+                                 key=lambda p: tuple([str(p[sort_prop]) for sort_prop in GitlabConfig.SORT_ON]),
+                                 reverse=GitlabConfig.SORT_REVERSE)
 
         for project in sorted_projects:
             print(

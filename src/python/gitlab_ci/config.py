@@ -16,7 +16,7 @@ class GitlabConfig(object):
     ONLY_PROJECTS_WITH_PIPELINES = strtobool(_config['preferences'].get('only_projects_with_pipelines', 'True'))
     ONLY_PROJECTS_LAST_WEEKS = _config['preferences'].get('only_projects_last_weeks', None)
 
-    SORT_ON = _config['preferences'].get('sort_on', 'activity')
+    SORT_ON = _config['preferences'].get('sort_on', 'activity').split(",")
     SORT_REVERSE = strtobool(_config['preferences'].get('sort_reverse', "False"))
     ALTERNATE_HEADER = strtobool(_config['preferences'].get('alternate_header', "False"))
 

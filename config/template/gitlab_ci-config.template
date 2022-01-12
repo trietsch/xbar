@@ -6,8 +6,9 @@ check_starred_only = True
 check_membership = True
 # Only show projects with pipelines
 only_projects_with_pipelines = True
-# 'name' or 'activity'
-sort_on = activity
+# 'name', 'activity', 'status'
+# Multiple sort keys can be provided, by separating them by a , -> e.g. status,activity
+sort_on = status
 sort_reverse = False
 alternate_header = False
 # limit to projects with activity in the last x weeks
