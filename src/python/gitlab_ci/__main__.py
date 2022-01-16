@@ -11,6 +11,8 @@ bitbar_gitlab_projects = []
 
 # Overall status counters
 statuses = defaultdict(int)
+ignore_statuses = [PipelineStatus.__members__.get(s) for s in
+        GitlabConfig.IGNORE_STATUSES]
 
 for instance in GitlabConfig.GITLAB_HOSTS:
     host = instance['host']
@@ -33,6 +35,8 @@ for instance in GitlabConfig.GITLAB_HOSTS:
             )
 
             if GitlabConfig.ONLY_PROJECTS_WITH_PIPELINES and pipeline_status == PipelineStatus.INACTIVE:
+                continue
+            if pipeline_status in ignore_statuses:
                 continue
             statuses[pipeline_status] += 1
 

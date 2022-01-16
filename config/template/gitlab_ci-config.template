@@ -10,6 +10,7 @@ only_projects_with_pipelines = True
 # Multiple sort keys can be provided, by separating them by a , -> e.g. status,activity
 sort_on = status
 sort_reverse = False
+ignore_statuses = SUCCESS
 alternate_header = False
 # limit to projects with activity in the last x weeks
 only_projects_last_weeks = 2
