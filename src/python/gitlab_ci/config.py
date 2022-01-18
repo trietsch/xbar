@@ -18,6 +18,7 @@ class GitlabConfig(object):
 
     SORT_ON = _config['preferences'].get('sort_on', 'activity').split(",")
     SORT_REVERSE = strtobool(_config['preferences'].get('sort_reverse', "False"))
+    IGNORE_STATUSES = _config['preferences'].get('ignore_statuses', "").split(',')
     ALTERNATE_HEADER = strtobool(_config['preferences'].get('alternate_header', "False"))
 
     API_PROJECTS = '/api/v4/projects'
