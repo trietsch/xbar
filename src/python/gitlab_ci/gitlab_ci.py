@@ -107,3 +107,5 @@ def get_most_recent_project_pipeline_status(_api_key, _url, _project_id, _elemen
             return PipelineStatus.FAILURE, current_job_web_url
         elif current_job_status == GitlabCiStatus.manual.name:
             return PipelineStatus.MANUAL, current_job_web_url
+        else:
+            return PipelineStatus.INACTIVE, None

@@ -1,3 +1,4 @@
+import datetime
 from collections import defaultdict
 
 import dateutil.parser
@@ -91,7 +92,8 @@ for instance in bitbar_gitlab_projects:
     if exception is not None:
         print(f"{gitlab_name} - Error: {exception} |templateImage={GitlabIcons.GITLAB_LOGO.base64_image}")
     else:
-        print(f"{gitlab_name} |templateImage={GitlabIcons.GITLAB_LOGO.base64_image}")
+        print_time = datetime.datetime.now().strftime('%H:%M:%S')
+        print(f"{gitlab_name} (last refresh: {print_time}) |templateImage={GitlabIcons.GITLAB_LOGO.base64_image}")
 
         sorted_projects = sorted(instance['projects'],
                                  key=lambda p: tuple([str(p[sort_prop]) for sort_prop in GitlabConfig.SORT_ON]),
