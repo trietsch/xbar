@@ -3,6 +3,8 @@ import os
 from configparser import ConfigParser
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+from sys import platform
+
 
 from ..common.util import get_config_file
 
@@ -41,8 +43,12 @@ class AppConfigReader(object):
 
     @staticmethod
     def _add_cache_path(config_parser: ConfigParser, filename: str):
-        # FIXME cache path for Linux based OSes
-        cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/nl.robintrietsch.bitbar")
+        if platform == "linux" or platform == "linux2":
+            cache_path = os.path.join(os.path.expanduser(os.getenv("XDG_CACHE_HOME", "~/.cache")),"nl.robintrietsch.bitbar")
+        elif platform == "darwin":
+            cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/nl.robintrietsch.bitbar")
+        else :
+            cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/nl.robintrietsch.bitbar")
 
         if not os.path.exists(cache_path):
             os.makedirs(cache_path)
