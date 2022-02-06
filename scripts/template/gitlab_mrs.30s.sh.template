@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
-# <bitbar.title>Gitlab CI (CCMenu functionality)</bitbar.title>
-# <bitbar.desc>Shows the most recent build status for your projects</bitbar.desc>
+# <bitbar.title>Gitlab Merge Requests</bitbar.title>
+# <bitbar.desc>Lists MRs including status for a GitLab instance</bitbar.desc>
 # <bitbar.author>Robin Trietsch</bitbar.author>
 # <bitbar.author.github>trietsch</bitbar.author.github>
 # <bitbar.dependencies>python3</bitbar.dependencies>
 # <bitbar.abouturl>https://github.com/trietsch/xbar</bitbar.abouturl>
 
-# Settings can be found in the ../config/gitlab_ci-config.ini file
+# Settings can be found in the ../config/gitlab_mrs-config.ini file
 # If it doesn't exist, copy the template file and fill out the details
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../src" && pwd )"
 cd "$DIR"
 
-"./wrapper.sh" "gitlab_ci"
+"./wrapper.sh" "gitlab_mrs"

@@ -73,7 +73,7 @@ def print_prs(
         )
 
 
-def print_bitbar_pull_request_menu(
+def print_xbar_pull_request_menu(
         pr_overview: PullRequestsOverview,
         pr_statuses: Dict[PullRequestStatus, Icon],
         sort_on: PullRequestSort,

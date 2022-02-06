@@ -1,7 +1,7 @@
 from . import get_pull_request_overview, BitbucketIcons, BitbucketConfig
-from ..pull_requests import print_bitbar_pull_request_menu
+from ..pull_requests import print_xbar_pull_request_menu
 
-print_bitbar_pull_request_menu(
+print_xbar_pull_request_menu(
     get_pull_request_overview(
         BitbucketConfig.PRIVATE_TOKEN,
         BitbucketConfig.BITBUCKET_HOST

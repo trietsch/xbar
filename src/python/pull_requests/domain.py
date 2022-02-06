@@ -32,7 +32,7 @@ class PullRequest(object):
 
     def __eq__(self, other):
         try:
-            return f'{self.slug}-{self.id}' == f'{other.slug}-{other.id}'
+            return self.get_uuid() == other.get_uuid()
         except AttributeError:
             return NotImplemented
 
@@ -44,7 +44,7 @@ class PullRequest(object):
         self.overall_status = PullRequestStatus[self.overall_status] if isinstance(self.overall_status,
                                                                                    str) else self.overall_status
 
-    def _get_uuid(self):
+    def get_uuid(self):
         return f'{self.slug}-{self.id}'
 
 

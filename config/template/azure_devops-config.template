@@ -1,6 +1,8 @@
 [python]
 python_binary = "/path/to/python"
 
+# Note: don't use quotes, only for the Python binary. Otherwise stuff won't work
+
 [preferences]
 organization = # fill out
 personal_access_token = # fill out

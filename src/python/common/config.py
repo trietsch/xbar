@@ -41,6 +41,7 @@ class AppConfigReader(object):
 
     @staticmethod
     def _add_cache_path(config_parser: ConfigParser, filename: str):
+        # FIXME cache path for Linux based OSes
         cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/nl.robintrietsch.bitbar")
 
         if not os.path.exists(cache_path):

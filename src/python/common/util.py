@@ -19,6 +19,13 @@ def epoch_ms_to_datetime(epoch_ms):
     return datetime.fromtimestamp(epoch_ms / 1000.0, tz=timezone.utc)
 
 
+zulu_timestamp_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+
+
+def zulu_timestamp_string_to_datetime(zulu_timestamp: str):
+    return datetime.strptime(zulu_timestamp, zulu_timestamp_format)
+
+
 def abbreviate_string(s: str, max_characters: int):
     return s.replace("|", "-")[:max_characters] + "..." if len(s) > max_characters else s
 

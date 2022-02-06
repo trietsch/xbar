@@ -1,2 +1,2 @@
 from .domain import *
-from .menu import print_bitbar_pull_request_menu
+from .menu import print_xbar_pull_request_menu

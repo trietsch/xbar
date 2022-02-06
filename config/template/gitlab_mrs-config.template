@@ -1,0 +1,21 @@
+[python]
+python_binary = "/path/to/python"
+
+# Note: don't use quotes, only for the Python binary. Otherwise stuff won't work
+
+[preferences]
+gitlab_host = https://gitlab.myorg.com
+private_token = your_token
+
+# for which group do you want to list MRs?
+group_name = my_group
+# MRs that contain one of more of these labels will not be shown
+# Use a comma to separate values, do not put spaces after commas
+exclude_mrs_with_labels = Renovate
+
+# 'name' or 'activity'
+sort_on = activity
+abbreviation_characters = 30
+omit_reviewed_and_approved = False
+# Notifications when an MR has changed, for macOS
+notifications_enabled = True
