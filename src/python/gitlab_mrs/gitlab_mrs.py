@@ -37,24 +37,37 @@ def get_authored_merge_requests(_author_id, _mrs):
 
 
 def get_overall_status(_mr, _author_id) -> (ProjectMergeRequest, PullRequestStatus):
-    unresolved_threads = list(filter(lambda note: not getattr(note, 'resolved', True), _mr.notes.list()))
-    approvals = get_approvals(_mr, _author_id)
+    has_unresolved_threads = mr_has_unresolved_threads(_mr)
+    approved = mr_is_approved(_mr, _author_id)
 
-    if len(unresolved_threads) > 0:
+    if has_unresolved_threads and approved:
+        return _mr, PullRequestStatus.APPROVED_WITH_SUGGESTIONS
+    elif has_unresolved_threads:
         return _mr, PullRequestStatus.NEEDS_WORK
-    elif len(approvals) > 0:
+    elif approved:
         return _mr, PullRequestStatus.APPROVED
     else:
         return _mr, PullRequestStatus.UNAPPROVED
 
 
-def get_approvals(_mr, _author_id):
+def mr_has_unresolved_threads(_mr) -> bool:
+    # Get the `resolved` attribute, and default to true if the attribute does not exist,
+    # that way, we only get resolvable comments
+    # We only want to keep the unresolved comments that are not yet resolved and are resolvable,
+    # hence, we negate the attribute
+    unresolved_threads = list(filter(lambda note: not getattr(note, 'resolved', True), _mr.notes.list()))
+    return len(unresolved_threads) > 0
+
+
+def mr_is_approved(_mr, _author_id) -> bool:
     approvals = _mr.approvals.get().approved_by
 
     if _mr.author["id"] == _author_id:
-        return list(filter(lambda approval: approval["user"]["id"] != _author_id, approvals))
+        others_approvals = list(filter(lambda approval: approval["user"]["id"] != _author_id, approvals))
+        return len(others_approvals) > 0
     else:
-        return approvals
+        my_approval = list(filter(lambda approval: approval["user"]["id"] == _author_id, approvals))
+        return len(my_approval) == 1
 
 
 def extract_pull_request_data(_raw_merge_requests) -> List[PullRequest]:
