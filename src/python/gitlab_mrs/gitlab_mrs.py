@@ -37,7 +37,7 @@ def get_authored_merge_requests(_author_id, _mrs):
 
 
 def get_overall_status(_mr, _author_id) -> (ProjectMergeRequest, PullRequestStatus):
-    has_unresolved_threads = mr_has_unresolved_threads(_mr)
+    has_unresolved_threads = mr_has_unresolved_threads(_mr, _author_id)
     approved = mr_is_approved(_mr, _author_id)
 
     if has_unresolved_threads and approved:
@@ -50,13 +50,24 @@ def get_overall_status(_mr, _author_id) -> (ProjectMergeRequest, PullRequestStat
         return _mr, PullRequestStatus.UNAPPROVED
 
 
-def mr_has_unresolved_threads(_mr) -> bool:
+def mr_has_unresolved_threads(_mr, _author_id) -> bool:
     # Get the `resolved` attribute, and default to true if the attribute does not exist,
     # that way, we only get resolvable comments
     # We only want to keep the unresolved comments that are not yet resolved and are resolvable,
     # hence, we negate the attribute
-    unresolved_threads = list(filter(lambda note: not getattr(note, 'resolved', True), _mr.notes.list()))
-    return len(unresolved_threads) > 0
+
+    notes = _mr.notes.list()
+
+    if _mr.author["id"] == _author_id:
+        unresolved_threads_by_others = list(
+            filter(lambda note: not getattr(note, 'resolved', True) and note.author["id"] != _author_id,
+                   notes))
+        return len(unresolved_threads_by_others) > 0
+    else:
+        unresolved_threads_by_me = list(
+            filter(lambda note: not getattr(note, 'resolved', True) and note.author["id"] == _author_id,
+                   notes))
+        return len(unresolved_threads_by_me) > 0
 
 
 def mr_is_approved(_mr, _author_id) -> bool:
