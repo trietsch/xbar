@@ -52,16 +52,6 @@ def print_prs(
 
         pr_urls = list()
 
-        for to_ref, to_ref_prs in itertools.groupby(prs_sorted_by_to_ref, key=lambda p: p.to_ref):
-            to_ref_prs_list: List[PullRequest] = sort_pull_requests(list(to_ref_prs), sort_on)
-            print(f"--{to_ref}")
-
-            for _pr in to_ref_prs_list:
-                print(f"--{_pr.from_ref} -- {_pr.title} (#{_pr.id}) - {_pr.time_ago}" +
-                      f"|href={_pr.href} image={status_icons[_pr.overall_status].base64_image}")
-
-                pr_urls.append(_pr.href)
-
         # Alternate click (option click to open all)
         print(
             (f"{repo} (open {str(len(repo_prs_list))} PRs) |"
@@ -71,6 +61,16 @@ def print_prs(
              "terminal=false"
              )
         )
+
+        for to_ref, to_ref_prs in itertools.groupby(prs_sorted_by_to_ref, key=lambda p: p.to_ref):
+            to_ref_prs_list: List[PullRequest] = sort_pull_requests(list(to_ref_prs), sort_on)
+            print(f"--{to_ref}")
+
+            for _pr in to_ref_prs_list:
+                print(f"--{_pr.from_ref} -- {_pr.title} (#{_pr.id}) - {_pr.time_ago}" +
+                      f"|href={_pr.href} image={status_icons[_pr.overall_status].base64_image}")
+
+                pr_urls.append(_pr.href)
 
 
 def print_xbar_pull_request_menu(
