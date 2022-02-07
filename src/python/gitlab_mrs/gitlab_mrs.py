@@ -1,7 +1,7 @@
 import traceback
 from typing import List
 
-from gitlab import Gitlab
+from gitlab import Gitlab, GitlabHttpError
 from gitlab.v4.objects import ProjectMergeRequest
 from requests import Timeout
 
@@ -38,7 +38,7 @@ def get_authored_merge_requests(_author_id, _mrs):
 
 def get_overall_status(_mr, _author_id) -> (ProjectMergeRequest, PullRequestStatus):
     unresolved_threads = list(filter(lambda note: not getattr(note, 'resolved', True), _mr.notes.list()))
-    approvals = list(filter(lambda approval: approval["user"]["id"] != _author_id, _mr.approvals.get().approved_by))
+    approvals = get_approvals(_mr, _author_id)
 
     if len(unresolved_threads) > 0:
         return _mr, PullRequestStatus.NEEDS_WORK
@@ -46,6 +46,15 @@ def get_overall_status(_mr, _author_id) -> (ProjectMergeRequest, PullRequestStat
         return _mr, PullRequestStatus.APPROVED
     else:
         return _mr, PullRequestStatus.UNAPPROVED
+
+
+def get_approvals(_mr, _author_id):
+    approvals = _mr.approvals.get().approved_by
+
+    if _mr.author["id"] == _author_id:
+        return list(filter(lambda approval: approval["user"]["id"] != _author_id, approvals))
+    else:
+        return approvals
 
 
 def extract_pull_request_data(_raw_merge_requests) -> List[PullRequest]:
@@ -116,7 +125,7 @@ def get_merge_request_overview() -> PullRequestsOverview:
     except Timeout as e:
         _exception = PullRequestException(GitlabMrsConstants.MODULE, GitlabMrsConstants.TIMEOUT_MESSAGE, e,
                                           traceback.format_exc())
-    except ConnectionError as e:
+    except GitlabHttpError as e:
         _exception = PullRequestException(GitlabMrsConstants.MODULE, GitlabMrsConstants.CONNECTION_MESSAGE, e,
                                           traceback.format_exc())
     except Exception as e:
