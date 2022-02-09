@@ -1,11 +1,15 @@
 # xbar (previously BitBar) scripts
 This repo contains my personal [xbar](https://github.com/matryer/xbar) scripts. Feel free to use, fork, modify, or tweak them to meet your needs! If you find any issues, you can report them in this Gitlab project. Merge requests are appreciated.
 
+
+
 Note that these scripts (probably) also work with [argos](https://github.com/p-e-w/argos) and [kargos](https://github.com/lipido/kargos) for Unix systems.
 
 ## Installation
+**NOTE: I've noticed that xbar doesn't work as well as BitBar does, so I advise to install BitBar**
+
 The following steps are required to run xbar scripts (that use Python):
-1. Ensure that xbar (or kargos) is installed: `brew cask install xbar` or follow the installation instructions for the application that can run xbar scripts.
+1. Ensure that xbar/bitbar (or kargos) is installed: `brew install bitbar --cask` / `brew install xbar --cask` or follow the installation instructions for the application that can run xbar scripts.
 1. Open xbar and choose `/scripts` as the xbar Plugin Folder.
 1. Copy the scripts you want to enable `scripts/template` to `scripts`, and make sure to remove `.template` from the filename.
 1. Make sure you have Python 3 installed (tested with `3.7.4`): `brew install python3`
