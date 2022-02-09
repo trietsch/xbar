@@ -4,15 +4,17 @@ python_binary = "/path/to/python"
 # Note: don't use quotes, only for the Python binary. Otherwise stuff won't work
 
 [preferences]
-check_starred_only = True
+check_starred_only = False
 check_membership = True
 # Only show projects with pipelines
 only_projects_with_pipelines = True
 # 'name', 'activity', 'status'
 # Multiple sort keys can be provided, by separating them by a , -> e.g. status,activity
-sort_on = status
-sort_reverse = False
-ignore_statuses = SUCCESS
+sort_on = status,activity
+sort_reverse = True
+# If you want to hide all pipelines that are succesfull, uncomment the following line, and remove the other ignore_statuses
+# ignore_statuses = SUCCESS
+ignore_statuses = ""
 alternate_header = False
 # limit to projects with activity in the last x weeks
 only_projects_last_weeks = 2
@@ -20,6 +22,7 @@ only_projects_last_weeks = 2
 gitlab_hosts = ["Gitlab host one","Gitlab host two","Gitlab"]
 
 [Gitlab host one]
+# Gitlab host can be any valid url
 host = https://gitlab.myorg.com
 private_token =
 

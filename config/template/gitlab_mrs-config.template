@@ -4,7 +4,8 @@ python_binary = "/path/to/python"
 # Note: don't use quotes, only for the Python binary. Otherwise stuff won't work
 
 [preferences]
-gitlab_host = https://gitlab.myorg.com
+# Gitlab host can be any valid url
+gitlab_host = https://gitlab.com
 private_token = your_token
 
 # for which group do you want to list MRs?
