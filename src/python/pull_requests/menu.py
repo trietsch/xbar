@@ -37,7 +37,17 @@ def print_prs(
         sort_on: PullRequestSort,
         section_icon: Icon,
         status_icons: Dict[PullRequestStatus, Icon]):
-    print(f"{pr_type} | templateImage={section_icon.base64_image}")
+    all_pr_urls = [_pr.href for _pr in pull_requests]
+
+    print(f"{pr_type} ({len(all_pr_urls)}) | templateImage={section_icon.base64_image}")
+    print(
+        (f"{pr_type} (open all PRs) |"
+         "alternate=true "
+         f"templateImage={section_icon.base64_image} "
+         f"bash={open_multiple_urls} param1='{' '.join(all_pr_urls)}' "
+         "terminal=false"
+         )
+    )
     print("---")
 
     prs_sorted_by_slug = sorted(pull_requests, key=lambda p: p.slug)
