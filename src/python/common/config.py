@@ -8,7 +8,7 @@ from sys import platform
 
 from ..common.util import get_config_file
 
-log_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Application Support/nl.robintrietsch.bitbar")
+log_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Application Support/dev.trietsch.xbar")
 
 
 def get_logger(name: str, loglevel=logging.DEBUG) -> logging.Logger:
@@ -44,11 +44,11 @@ class AppConfigReader(object):
     @staticmethod
     def _add_cache_path(config_parser: ConfigParser, filename: str):
         if platform == "linux" or platform == "linux2":
-            cache_path = os.path.join(os.path.expanduser(os.getenv("XDG_CACHE_HOME", "~/.cache")),"nl.robintrietsch.bitbar")
+            cache_path = os.path.join(os.path.expanduser(os.getenv("XDG_CACHE_HOME", "~/.cache")),"dev.trietsch.xbar")
         elif platform == "darwin":
-            cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/nl.robintrietsch.bitbar")
+            cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/dev.trietsch.xbar")
         else :
-            cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/nl.robintrietsch.bitbar")
+            cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/dev.trietsch.xbar")
 
         if not os.path.exists(cache_path):
             os.makedirs(cache_path)
