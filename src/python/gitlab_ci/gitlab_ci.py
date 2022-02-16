@@ -25,6 +25,7 @@ def get_project_page(_api_key, _url, _last_activity_after, _page, _projects):
         page=_page,
         membership=GitlabConfig.CHECK_MEMBERSHIP,
         starred=GitlabConfig.CHECK_STARRED_ONLY,
+        archived=False,
         simple='true'
     )
     if _last_activity_after is not None:
