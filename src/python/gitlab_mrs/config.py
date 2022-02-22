@@ -39,5 +39,6 @@ class GitlabMrsIcons(object):
     PR_STATUSES: Dict[PullRequestStatus, Icon] = {
         PullRequestStatus.UNAPPROVED: Icons.GREY_CIRCLE,
         PullRequestStatus.NEEDS_WORK: Icons.ORANGE_CIRCLE,
-        PullRequestStatus.APPROVED: Icons.GREEN_CIRCLE
+        PullRequestStatus.APPROVED: Icons.GREEN_CIRCLE,
+        PullRequestStatus.APPROVED_WITH_SUGGESTIONS: Icons.GREEN_CIRCLE
     }
