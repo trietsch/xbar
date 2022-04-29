@@ -18,5 +18,6 @@ exclude_mrs_with_labels = Renovate
 sort_on = activity
 abbreviation_characters = 30
 omit_reviewed_and_approved = False
+omit_draft = True
 # Notifications when an MR has changed, for macOS
 notifications_enabled = True

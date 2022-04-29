@@ -105,7 +105,8 @@ def extract_pull_request_data(_raw_merge_requests) -> List[PullRequest]:
 
 def group_mrs(_gl):
     group = _gl.groups.get(GitlabMrsConfig.GROUP_NAME)
-    all_open_mrs = group.mergerequests.list(state="opened", all=True)
+
+    all_open_mrs = group.mergerequests.list(state="opened", all=True, wip="no") if GitlabMrsConfig.OMIT_DRAFT else group.mergerequests.list(state="opened", all=True)
 
     # Ensure we only keep MRs that have none of the labels in the exclusions list
     mrs = list(

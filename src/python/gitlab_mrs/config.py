@@ -23,6 +23,7 @@ class GitlabMrsConfig(object):
     SORT_ON = PullRequestSort[_config["preferences"]["sort_on"].upper()]
     ABBREVIATION_CHARACTERS = int(_config["preferences"].get("abbreviation_characters", "30"))
     OMIT_REVIEWED_AND_APPROVED = strtobool(_config["preferences"].get("omit_reviewed_and_approved", "False"))
+    OMIT_DRAFT = strtobool(_config["preferences"].get("omit_draft", "True"))
     NOTIFICATIONS_ENABLED = strtobool(_config["preferences"].get("notifications_enabled", "False"))
     GROUP_NAME = _config["preferences"]["group_name"]
     EXCLUDE_MRS_WITH_LABELS = set(_config["preferences"].get("exclude_mrs_with_labels", "").split(","))
