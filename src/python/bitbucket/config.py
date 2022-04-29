@@ -1,17 +1,10 @@
 from distutils.util import strtobool
 from typing import Dict
 
+from .constants import BitbucketConstants
 from ..common.config import AppConfigReader
 from ..common.icons import Icon, Icons
 from ..pull_requests import PullRequestSort, PullRequestStatus
-
-
-class BitbucketConstants(object):
-    MODULE = "bitbucket"
-
-    TIMEOUT_MESSAGE = "Timeout while trying to connect to Bitbucket host."
-    CONNECTION_MESSAGE = "Failed to connect to Bitbucket host."
-    UNKNOWN_MESSAGE = "An unknown exception occurred while trying to fetch PRs."
 
 
 class BitbucketConfig(object):

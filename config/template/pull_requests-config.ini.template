@@ -1,0 +1,9 @@
+[python]
+python_binary = "/path/to/python"
+
+[preferences]
+# 'name' or 'activity'
+sort_on = activity
+notifications_enabled = True
+
+enabled_pr_modules = gitlab_mrs,github_prs
