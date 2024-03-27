@@ -26,6 +26,13 @@ def zulu_timestamp_string_to_datetime(zulu_timestamp: str):
     return datetime.strptime(zulu_timestamp, zulu_timestamp_format)
 
 
+github_zulu_timestamp_format = "%Y-%m-%dT%H:%M:%S:%fZ"
+
+
+def github_zulu_timestamp_string_to_datetime(zulu_timestamp: str):
+    return datetime.strptime(zulu_timestamp, github_zulu_timestamp_format)
+
+
 def abbreviate_string(s: str, max_characters: int):
     return s.replace("|", "-")[:max_characters] + "..." if len(s) > max_characters else s
 
