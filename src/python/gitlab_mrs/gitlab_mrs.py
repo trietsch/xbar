@@ -56,7 +56,7 @@ def mr_has_unresolved_threads(_mr, _author_id) -> bool:
     # We only want to keep the unresolved comments that are not yet resolved and are resolvable,
     # hence, we negate the attribute
 
-    notes = _mr.notes.list()
+    notes = _mr.notes.list(get_all=True)
 
     if _mr.author["id"] == _author_id:
         unresolved_threads_by_others = list(

@@ -4,3 +4,4 @@
 **/.pyc
 scripts/*.sh
 .DS_Store
+venv
