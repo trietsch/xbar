@@ -134,13 +134,13 @@ def get_merge_request_overview() -> PullRequestsOverview:
     _prs_authored_with_work: List[PullRequest] = []
     _exception = None
 
-    _gl = Gitlab(url=GitlabMrsConfig.GITLAB_HOST, private_token=GitlabMrsConfig.PRIVATE_TOKEN)
-    _gl.auth()
-    _author_id = _gl.user.id
-
-    mrs = group_mrs(_gl)
-
     try:
+        _gl = Gitlab(url=GitlabMrsConfig.GITLAB_HOST, private_token=GitlabMrsConfig.PRIVATE_TOKEN)
+        _gl.auth()
+        _author_id = _gl.user.id
+
+        mrs = group_mrs(_gl)
+
         _prs_to_review: List[PullRequest] = extract_pull_request_data(
             get_merge_requests_to_review(_author_id, mrs)
         )
