@@ -18,6 +18,7 @@ class GitlabMrsConfig(object):
     OMIT_DRAFT = strtobool(_config["preferences"].get("omit_draft", "True"))
     NOTIFICATIONS_ENABLED = strtobool(_config["preferences"].get("notifications_enabled", "False"))
     GROUP_NAME = _config["preferences"]["group_name"]
+    OTHER_GROUPS_MRS_FOR_GROUP_MEMBERS = set(_config["preferences"].get("show_other_mrs_for_group_owners_in_these_groups", "").split(","))
     EXCLUDE_MRS_WITH_LABELS = set(_config["preferences"].get("exclude_mrs_with_labels", "").split(","))
 
     CACHE_FILE = _config["common"]["cache_path"]

@@ -10,6 +10,8 @@ private_token = your_token
 
 # for which group do you want to list MRs?
 group_name = my_group
+# Show MRs created by 'group_name' owners for the following other groups:
+show_other_mrs_for_group_owners_in_these_groups = teamwaldo
 # MRs that contain one of more of these labels will not be shown
 # Use a comma to separate values, do not put spaces after commas
 exclude_mrs_with_labels = Renovate

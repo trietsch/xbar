@@ -2,7 +2,8 @@ import traceback
 from typing import List
 
 from gitlab import Gitlab, GitlabHttpError
-from gitlab.v4.objects import ProjectMergeRequest
+from gitlab.const import AccessLevel
+from gitlab.v4.objects import ProjectMergeRequest, Group, GroupMember, GroupMergeRequest
 from requests import Timeout
 
 from .config import GitlabMrsConfig, GitlabMrsConstants
@@ -103,10 +104,43 @@ def extract_pull_request_data(_raw_merge_requests) -> List[PullRequest]:
     return merge_requests
 
 
-def group_mrs(_gl):
-    group = _gl.groups.get(GitlabMrsConfig.GROUP_NAME)
+def list_mrs_for_group(_group: Group, _members_filter=None) -> List[GroupMergeRequest]:
+    if _members_filter is not None:
+        member_usernames = list(map(lambda member: member.username, _members_filter))
+    else:
+        member_usernames = []
 
-    all_open_mrs = group.mergerequests.list(state="opened", all=True, wip="no") if GitlabMrsConfig.OMIT_DRAFT else group.mergerequests.list(state="opened", all=True)
+    mrs = _group.mergerequests.list(state="opened", all=True,
+                                    wip="no") if GitlabMrsConfig.OMIT_DRAFT else _group.mergerequests.list(
+        state="opened", all=True)
+
+    if len(member_usernames) == 0:
+        return mrs
+    else:
+        return list(filter(lambda mr: mr.author['username'] in member_usernames, mrs))
+
+
+def list_group_members(_group: Group) -> List[GroupMember]:
+    return list(filter(lambda member: member.access_level >= AccessLevel.OWNER and "group_" not in member.username,
+                       _group.members.list()))
+
+
+def list_mrs_for_group_owners_in_other_groups(_gl, _main_group) -> List[GroupMergeRequest]:
+    members = list_group_members(_main_group)
+
+    other_group_mrs: List[GroupMergeRequest] = []
+
+    for group_name in GitlabMrsConfig.OTHER_GROUPS_MRS_FOR_GROUP_MEMBERS:
+        group = _gl.groups.get(group_name)
+        other_group_mrs += list_mrs_for_group(group, members)
+
+    return other_group_mrs
+
+
+def group_mrs(_gl):
+    main_group = _gl.groups.get(GitlabMrsConfig.GROUP_NAME)
+
+    all_open_mrs = list_mrs_for_group(main_group) + list_mrs_for_group_owners_in_other_groups(_gl, main_group)
 
     # Ensure we only keep MRs that have none of the labels in the exclusions list
     mrs = list(
