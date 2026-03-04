@@ -1,4 +1,3 @@
-from distutils.util import strtobool
 from typing import Dict
 
 from .constants import GitlabMrsConstants
@@ -11,15 +10,15 @@ class GitlabMrsConfig(object):
     _config = AppConfigReader.read(GitlabMrsConstants.MODULE)
 
     GITLAB_HOST = _config["preferences"].get("gitlab_host", "https://gitlab.com")
-    PRIVATE_TOKEN = _config["preferences"]["private_token"]  # no default, crash
+    PRIVATE_TOKEN = _config["preferences"]["private_token"]
     SORT_ON = PullRequestSort[_config["preferences"]["sort_on"].upper()]
-    ABBREVIATION_CHARACTERS = int(_config["preferences"].get("abbreviation_characters", "30"))
-    OMIT_REVIEWED_AND_APPROVED = strtobool(_config["preferences"].get("omit_reviewed_and_approved", "False"))
-    OMIT_DRAFT = strtobool(_config["preferences"].get("omit_draft", "True"))
-    NOTIFICATIONS_ENABLED = strtobool(_config["preferences"].get("notifications_enabled", "False"))
+    ABBREVIATION_CHARACTERS = _config["preferences"].get("abbreviation_characters", 30)
+    OMIT_REVIEWED_AND_APPROVED = _config["preferences"].get("omit_reviewed_and_approved", False)
+    OMIT_DRAFT = _config["preferences"].get("omit_draft", True)
+    NOTIFICATIONS_ENABLED = _config["preferences"].get("notifications_enabled", False)
     GROUP_NAME = _config["preferences"]["group_name"]
-    OTHER_GROUPS_MRS_FOR_GROUP_MEMBERS = set(_config["preferences"].get("show_other_mrs_for_group_owners_in_these_groups", "").split(","))
-    EXCLUDE_MRS_WITH_LABELS = set(_config["preferences"].get("exclude_mrs_with_labels", "").split(","))
+    OTHER_GROUPS_MRS_FOR_GROUP_MEMBERS = set(_config["preferences"].get("show_other_mrs_for_group_owners_in_these_groups", []))
+    EXCLUDE_MRS_WITH_LABELS = set(_config["preferences"].get("exclude_mrs_with_labels", []))
 
     CACHE_FILE = _config["common"]["cache_path"]
 

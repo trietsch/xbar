@@ -2,7 +2,7 @@ import traceback
 from typing import List, Dict
 
 from azure.devops.connection import Connection
-from azure.devops.v5_1.git import GitPullRequestSearchCriteria, GitPullRequest, IdentityRefWithVote
+from azure.devops.v7_1.git.models import GitPullRequestSearchCriteria, GitPullRequest, IdentityRefWithVote
 from msrest.authentication import BasicAuthentication
 from requests import Timeout
 

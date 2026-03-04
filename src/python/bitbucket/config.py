@@ -1,4 +1,3 @@
-from distutils.util import strtobool
 from typing import Dict
 
 from .constants import BitbucketConstants
@@ -14,9 +13,9 @@ class BitbucketConfig(object):
     PRIVATE_TOKEN = _config['preferences']['private_token']
     USER_SLUG = _config['preferences']['user_slug']
     SORT_ON = PullRequestSort[_config['preferences']['sort_on'].upper()]
-    ABBREVIATION_CHARACTERS = int(_config['preferences']['abbreviation_characters'])
-    OMIT_REVIEWED_AND_APPROVED = strtobool(_config['preferences']['omit_reviewed_and_approved'])
-    NOTIFICATIONS_ENABLED = strtobool(_config['preferences']['notifications_enabled'])
+    ABBREVIATION_CHARACTERS = _config['preferences']['abbreviation_characters']
+    OMIT_REVIEWED_AND_APPROVED = _config['preferences']['omit_reviewed_and_approved']
+    NOTIFICATIONS_ENABLED = _config['preferences']['notifications_enabled']
 
     BITBUCKET_API_PULL_REQUESTS = '/rest/api/1.0/dashboard/pull-requests'
     CACHE_FILE = _config['common']['cache_path']

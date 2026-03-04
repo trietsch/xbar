@@ -1,5 +1,3 @@
-import json
-from distutils.util import strtobool
 from typing import Dict
 
 from .constants import AzureDevOpsConstants
@@ -9,19 +7,19 @@ from ..pull_requests import PullRequestSort, PullRequestStatus
 
 
 class AzureDevOpsConfig(object):
-    _config = AppConfigReader.read(AzureDevOpsConstants.MODULE)
+    _config = AppConfigReader.read(AzureDevOpsConstants.MODULE, config_file="pull_requests", section="azure_devops")
 
     ORGANIZATION_URL = f'https://dev.azure.com/{_config["preferences"]["organization"]}'
     PERSONAL_ACCESS_TOKEN = _config['preferences']['personal_access_token']
-    PROJECTS = json.loads(_config['preferences']['projects'])
+    PROJECTS = _config['preferences']['projects']
     PULL_REQUEST_STATUS = _config['preferences']['pull_request_status']
     USER_EMAIL = _config['preferences']['user_email'].lower()
-    TEAM_NAMES = [name.lower() for name in (json.loads(_config['preferences']['team_names']))]
+    TEAM_NAMES = [name.lower() for name in _config['preferences']['team_names']]
 
     SORT_ON = PullRequestSort[_config['preferences']['sort_on'].upper()]
-    ABBREVIATION_CHARACTERS = int(_config['preferences']['abbreviation_characters'])
-    OMIT_REVIEWED_AND_APPROVED = strtobool(_config['preferences']['omit_reviewed_and_approved'])
-    NOTIFICATIONS_ENABLED = strtobool(_config['preferences']['notifications_enabled'])
+    ABBREVIATION_CHARACTERS = _config['preferences']['abbreviation_characters']
+    OMIT_REVIEWED_AND_APPROVED = _config['preferences']['omit_reviewed_and_approved']
+    NOTIFICATIONS_ENABLED = _config['preferences']['notifications_enabled']
 
     CACHE_FILE = _config['common']['cache_path']
 

@@ -1,0 +1,16 @@
+[project]
+name = "xbar"
+version = "0.1.0"
+requires-python = ">=3.9"
+dependencies = [
+    "timeago==1.0.13",
+    "python-dateutil==2.8.0",
+    "requests",
+    "azure-devops==7.1.0b4",
+    "ics==0.7",
+    "python-gitlab",
+    "setuptools",
+]
+
+[tool.uv]
+package = false

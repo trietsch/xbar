@@ -3,6 +3,7 @@ import concurrent.futures
 from . import PullRequestsOverview
 from .config import PullRequestsConfig
 from .contants import PullRequestConstants
+from ..common.config import set_config_source
 from ..pull_requests import print_xbar_pull_request_menu
 
 executor = concurrent.futures.ThreadPoolExecutor()
@@ -11,6 +12,7 @@ pr_overview = PullRequestsOverview([], [], [])
 pr_statuses = {}
 
 if PullRequestConstants.GITLAB_MODULE in PullRequestsConfig.ENABLED_PR_MODULES:
+    set_config_source("gitlab_mrs", "pull_requests", "gitlab_mrs")
     from ..gitlab_mrs import get_merge_request_overview as gitlab_mrs_overview
     from ..gitlab_mrs import GitlabMrsIcons
 
@@ -19,6 +21,7 @@ if PullRequestConstants.GITLAB_MODULE in PullRequestsConfig.ENABLED_PR_MODULES:
     pr_statuses = {**pr_statuses, **GitlabMrsIcons.PR_STATUSES}
 
 if PullRequestConstants.AZURE_DEVOPS_MODULE in PullRequestsConfig.ENABLED_PR_MODULES:
+    set_config_source("azure_devops", "pull_requests", "azure_devops")
     from ..azure_devops import AzureDevOpsConfig, PullRequestClient
     from ..azure_devops import AzureDevOpsIcons
 
@@ -32,6 +35,7 @@ if PullRequestConstants.AZURE_DEVOPS_MODULE in PullRequestsConfig.ENABLED_PR_MOD
     pr_statuses = {**pr_statuses, **AzureDevOpsIcons.PR_STATUSES}
 
 if PullRequestConstants.BITBUCKET_MODULE in PullRequestsConfig.ENABLED_PR_MODULES:
+    set_config_source("bitbucket", "pull_requests", "bitbucket")
     from ..bitbucket import BitbucketConfig, BitbucketIcons
     from ..bitbucket import get_pull_request_overview as bitbucket_prs_overview
 

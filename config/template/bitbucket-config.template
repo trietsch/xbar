@@ -1,16 +1,10 @@
-[python]
-python_binary = "/path/to/python"
-
-# Note: don't use quotes, only for the Python binary. Otherwise stuff won't work
-
 [preferences]
-bitbucket_host = # fill out
-private_token = # fill out
+bitbucket_host = "fill-out"
+private_token = "fill-out"
+user_slug = "fill-out"
 
-user_slug = # fill out
-
-# 'name' or 'activity'
-sort_on = activity
+# "name" or "activity"
+sort_on = "activity"
 abbreviation_characters = 30
-omit_reviewed_and_approved = False
-notifications_enabled = True
+omit_reviewed_and_approved = false
+notifications_enabled = true

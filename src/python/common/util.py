@@ -12,7 +12,7 @@ def get_absolute_path_to_repo_file(repo_path):
 
 
 def get_config_file(filename):
-    return get_absolute_path_to_repo_file(f"config/{filename}-config.ini")
+    return get_absolute_path_to_repo_file(f"config/{filename}-config.toml")
 
 
 def epoch_ms_to_datetime(epoch_ms):

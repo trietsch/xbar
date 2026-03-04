@@ -1,8 +1,3 @@
-[python]
-python_binary = "/path/to/python"
-
-# Note: don't use quotes, only for the Python binary. Otherwise stuff won't work
-
 [preferences]
-ical_url = https://example.com
+ical_url = "https://example.com"
 request_timeout_seconds = 15

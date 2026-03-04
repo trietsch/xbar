@@ -1,14 +1,19 @@
 import logging
 import os
-from configparser import ConfigParser
+import tomllib
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from sys import platform
 
-
 from ..common.util import get_config_file
 
 log_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Application Support/dev.trietsch.xbar")
+
+_config_sources: dict = {}  # module_name -> (config_filename, section_name)
+
+
+def set_config_source(module: str, config_file: str, section: str):
+    _config_sources[module] = (config_file, section)
 
 
 def get_logger(name: str, loglevel=logging.DEBUG) -> logging.Logger:
@@ -34,24 +39,33 @@ def get_logger(name: str, loglevel=logging.DEBUG) -> logging.Logger:
 
 class AppConfigReader(object):
     @staticmethod
-    def read(filename: str):
-        config_parser = ConfigParser()
-        config_parser.read(get_config_file(filename))
-        AppConfigReader._add_cache_path(config_parser, filename)
+    def read(module_name: str, config_file: str = None, section: str = None):
+        if config_file is None or section is None:
+            if module_name in _config_sources:
+                config_file, section = _config_sources[module_name]
+            else:
+                config_file, section = module_name, "preferences"
 
-        return config_parser._sections
+        config_path = get_config_file(config_file)
+        try:
+            with open(config_path, 'rb') as f:
+                raw = tomllib.load(f)
+        except FileNotFoundError:
+            raw = {}
+
+        config = {"preferences": raw.get(section, {})}
+        AppConfigReader._add_cache_path(config, module_name)
+        return config
 
     @staticmethod
-    def _add_cache_path(config_parser: ConfigParser, filename: str):
+    def _add_cache_path(config: dict, filename: str):
         if platform == "linux" or platform == "linux2":
-            cache_path = os.path.join(os.path.expanduser(os.getenv("XDG_CACHE_HOME", "~/.cache")),"dev.trietsch.xbar")
-        elif platform == "darwin":
-            cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/dev.trietsch.xbar")
-        else :
+            cache_path = os.path.join(os.path.expanduser(os.getenv("XDG_CACHE_HOME", "~/.cache")), "dev.trietsch.xbar")
+        else:
             cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/dev.trietsch.xbar")
 
         if not os.path.exists(cache_path):
             os.makedirs(cache_path)
 
-        config_parser.add_section("common")
-        config_parser.set("common", "cache_path", f'{cache_path}/{filename}')
+        config.setdefault('common', {})
+        config['common']['cache_path'] = f'{cache_path}/{filename}'

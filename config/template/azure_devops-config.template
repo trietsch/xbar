@@ -1,21 +1,15 @@
-[python]
-python_binary = "/path/to/python"
-
-# Note: don't use quotes, only for the Python binary. Otherwise stuff won't work
-
 [preferences]
-organization = # fill out
-personal_access_token = # fill out
-;Currently only single projects is supported, multi project will be added in the future
+organization = "fill-out"
+personal_access_token = "fill-out"
 projects = ["a project"]
-;Limit shown PRs by status, see https://docs.microsoft.com/en-us/rest/api/azure/devops/git/pull%20requests/get%20pull%20requests%20by%20project?view=azure-devops-rest-5.1#pullrequeststatus
-pull_request_status = active
-user_email = my@email.com
-;Fill out of your team sets a group as default reviewers on PRs, then PRs that have this group as reviewer will also match
-team_name = Awesome Team
+# See https://docs.microsoft.com/en-us/rest/api/azure/devops/git/pull-requests/get-pull-requests-by-project?view=azure-devops-rest-5.1#pullrequeststatus
+pull_request_status = "active"
+user_email = "my@email.com"
+# If your team sets a group as default reviewers on PRs, PRs with this group as reviewer will also match
+team_names = ["Awesome Team"]
 
-# 'name' or 'activity'
-sort_on = activity
+# "name" or "activity"
+sort_on = "activity"
 abbreviation_characters = 30
-omit_reviewed_and_approved = False
-notifications_enabled = True
+omit_reviewed_and_approved = false
+notifications_enabled = true

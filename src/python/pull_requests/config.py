@@ -1,5 +1,3 @@
-from distutils.util import strtobool
-
 from . import PullRequestSort
 from ..common.config import AppConfigReader
 from ..common.icons import Icon
@@ -13,8 +11,8 @@ class PullRequestsConstants(object):
 class PullRequestsConfig(object):
     _config = AppConfigReader.read(PullRequestsConstants.MODULE)
 
-    SORT_ON = PullRequestSort[_config["preferences"]["sort_on"].upper()]
-    NOTIFICATIONS_ENABLED = strtobool(_config["preferences"].get("notifications_enabled", "False"))
-    ENABLED_PR_MODULES = set(_config["preferences"].get("enabled_pr_modules", "").split(","))
+    SORT_ON = PullRequestSort[_config["preferences"].get("sort_on", "activity").upper()]
+    NOTIFICATIONS_ENABLED = _config["preferences"].get("notifications_enabled", False)
+    ENABLED_PR_MODULES = set(_config["preferences"].get("enabled_pr_modules", []))
 
     CACHE_FILE = _config["common"]["cache_path"]
