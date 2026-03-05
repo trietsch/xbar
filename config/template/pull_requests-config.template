@@ -16,6 +16,8 @@ team_names = ["Awesome Team"]
 sort_on = "activity"
 abbreviation_characters = 30
 omit_reviewed_and_approved = false
+omit_draft = false
+filter_by_reviewer = true
 notifications_enabled = true
 
 [gitlab_mrs]

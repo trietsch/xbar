@@ -19,6 +19,8 @@ class AzureDevOpsConfig(object):
     SORT_ON = PullRequestSort[_config['preferences']['sort_on'].upper()]
     ABBREVIATION_CHARACTERS = _config['preferences']['abbreviation_characters']
     OMIT_REVIEWED_AND_APPROVED = _config['preferences']['omit_reviewed_and_approved']
+    OMIT_DRAFT = _config['preferences'].get('omit_draft', False)
+    FILTER_BY_REVIEWER = _config['preferences'].get('filter_by_reviewer', True)
     NOTIFICATIONS_ENABLED = _config['preferences']['notifications_enabled']
 
     CACHE_FILE = _config['common']['cache_path']

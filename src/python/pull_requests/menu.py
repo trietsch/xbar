@@ -67,7 +67,8 @@ def print_prs(
             print(f"--{to_ref}")
 
             for _pr in to_ref_prs_list:
-                print(f"--{_pr.from_ref} -- {_pr.title} (#{_pr.id}) - {_pr.time_ago}" +
+                draft_prefix = "[Draft] " if _pr.is_draft else ""
+                print(f"--{_pr.from_ref} -- {draft_prefix}{_pr.title} (#{_pr.id}) - {_pr.time_ago}" +
                       f"|href={_pr.href} image={status_icons[_pr.overall_status].base64_image}")
 
                 pr_urls.append(_pr.href)

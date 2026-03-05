@@ -1,5 +1,6 @@
 import traceback
 from typing import List, Dict
+from urllib.parse import quote
 
 from azure.devops.connection import Connection
 from azure.devops.v7_1.git.models import GitPullRequestSearchCriteria, GitPullRequest, IdentityRefWithVote
@@ -37,7 +38,12 @@ class PullRequestClient(object):
                 # print("Query for project " + project)
                 joined_prs.extend(self._get_pull_requests_for_project(project, pr_status))
 
-            _prs_to_review = self._get_pull_request_to_be_reviewed_by(joined_prs, user_email, team_names)
+            if AzureDevOpsConfig.OMIT_DRAFT:
+                joined_prs = [pr for pr in joined_prs if not pr.is_draft]
+
+            _prs_to_review = self._get_pull_request_to_be_reviewed_by(joined_prs, user_email, team_names) \
+                if AzureDevOpsConfig.FILTER_BY_REVIEWER \
+                else GitPullRequestMapper.to_pull_requests(joined_prs)
             _prs_authored_with_work = self._get_pull_requests_authored(joined_prs, user_email)
         except Timeout as e:
             _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.TIMEOUT_MESSAGE, e,
@@ -113,7 +119,8 @@ class GitPullRequestMapper(object):
 
     @staticmethod
     def _to_pull_request(ado_pr: GitPullRequest) -> PullRequest:
-        repo_href = f"{AzureDevOpsConfig.ORGANIZATION_URL}/{ado_pr.repository.project.name}/_git/{ado_pr.repository.name}"
+        project = quote(ado_pr.repository.project.name, safe='')
+        repo_href = f"{AzureDevOpsConfig.ORGANIZATION_URL}/{project}/_git/{ado_pr.repository.name}"
         all_prs_href = f"{repo_href}/pullrequests?_a=active"
         pr_href = f"{repo_href}/pullrequest/{ado_pr.pull_request_id}"
 
@@ -125,6 +132,7 @@ class GitPullRequestMapper(object):
             to_ref=GitPullRequestMapper._short_ref(ado_pr.target_ref_name),
             # TODO fix overall status for authored work?
             overall_status=GitPullRequestMapper.get_reviewer_status(ado_pr.reviewers),
+            is_draft=ado_pr.is_draft or False,
             activity=ado_pr.creation_date,
             time_ago=time_ago(ado_pr.creation_date),
             all_prs_href=all_prs_href,

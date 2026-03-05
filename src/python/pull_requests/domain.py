@@ -25,6 +25,7 @@ class PullRequest(object):
     from_ref: str
     to_ref: str
     overall_status: PullRequestStatus
+    is_draft: bool
     activity: datetime
     time_ago: str
     all_prs_href: str
