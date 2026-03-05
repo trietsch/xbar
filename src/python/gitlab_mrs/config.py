@@ -1,26 +1,44 @@
-from typing import Dict
+from typing import Dict, Set
+
+from pydantic import computed_field, field_validator
+from pydantic_settings import BaseSettings
 
 from .constants import GitlabMrsConstants
-from ..common.config import AppConfigReader
+from ..common.config import TomlConfigSettingsSource, get_cache_path
 from ..common.icons import Icon, Icons
 from ..pull_requests import PullRequestSort, PullRequestStatus
 
 
-class GitlabMrsConfig(object):
-    _config = AppConfigReader.read(GitlabMrsConstants.MODULE)
+class GitlabMrsSettings(BaseSettings):
+    gitlab_host: str = "https://gitlab.com"
+    private_token: str
+    group_name: str
+    sort_on: PullRequestSort = PullRequestSort.ACTIVITY
+    abbreviation_characters: int = 30
+    omit_reviewed_and_approved: bool = False
+    omit_draft: bool = True
+    notifications_enabled: bool = False
+    show_other_mrs_for_group_owners_in_these_groups: Set[str] = set()
+    exclude_mrs_with_labels: Set[str] = set()
 
-    GITLAB_HOST = _config["preferences"].get("gitlab_host", "https://gitlab.com")
-    PRIVATE_TOKEN = _config["preferences"]["private_token"]
-    SORT_ON = PullRequestSort[_config["preferences"]["sort_on"].upper()]
-    ABBREVIATION_CHARACTERS = _config["preferences"].get("abbreviation_characters", 30)
-    OMIT_REVIEWED_AND_APPROVED = _config["preferences"].get("omit_reviewed_and_approved", False)
-    OMIT_DRAFT = _config["preferences"].get("omit_draft", True)
-    NOTIFICATIONS_ENABLED = _config["preferences"].get("notifications_enabled", False)
-    GROUP_NAME = _config["preferences"]["group_name"]
-    OTHER_GROUPS_MRS_FOR_GROUP_MEMBERS = set(_config["preferences"].get("show_other_mrs_for_group_owners_in_these_groups", []))
-    EXCLUDE_MRS_WITH_LABELS = set(_config["preferences"].get("exclude_mrs_with_labels", []))
+    @field_validator('sort_on', mode='before')
+    @classmethod
+    def parse_sort_on(cls, v) -> PullRequestSort:
+        if isinstance(v, str):
+            return PullRequestSort[v.upper()]
+        return v
 
-    CACHE_FILE = _config["common"]["cache_path"]
+    @computed_field
+    @property
+    def cache_file(self) -> str:
+        return get_cache_path(GitlabMrsConstants.MODULE)
+
+    @classmethod
+    def settings_customise_sources(cls, settings_cls, **kwargs):
+        return (TomlConfigSettingsSource(settings_cls, "pull_requests", "gitlab_mrs"),)
+
+
+gitlab_mrs_settings = GitlabMrsSettings()
 
 
 class GitlabMrsIcons(object):

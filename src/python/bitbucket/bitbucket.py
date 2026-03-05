@@ -4,7 +4,8 @@ from typing import List
 import requests
 from requests import Timeout
 
-from .config import BitbucketConfig, BitbucketConstants
+from .config import bitbucket_settings
+from .constants import BitbucketConstants
 from ..common.util import epoch_ms_to_datetime, abbreviate_string, time_ago
 from ..pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview, PullRequestException
 
@@ -33,7 +34,7 @@ def get_pull_requests(_api_key, _url, _params):
     headers = dict(
         Authorization=f'Bearer {_api_key}'
     )
-    r = requests.get(_url + BitbucketConfig.BITBUCKET_API_PULL_REQUESTS, params=_params, timeout=5, headers=headers)
+    r = requests.get(_url + BitbucketConstants.BITBUCKET_API_PULL_REQUESTS, params=_params, timeout=5, headers=headers)
 
     body = r.json()
     pull_requests = body['values']
@@ -48,15 +49,13 @@ def get_pull_requests(_api_key, _url, _params):
 
 def pr_should_be_reviewed_by_me(_pr):
     reviewers_filtered = list(
-        filter(lambda reviewer: reviewer['user']['slug'] == BitbucketConfig.USER_SLUG, _pr['reviewers']))
+        filter(lambda reviewer: reviewer['user']['slug'] == bitbucket_settings.user_slug, _pr['reviewers']))
 
-    # If OMIT = True, don't show if status = Approved
-    # If OMIT = False, show all
     if len(reviewers_filtered) > 0:
         pr_status = PullRequestStatus[reviewers_filtered[0]['status']]
 
-        if (BitbucketConfig.OMIT_REVIEWED_AND_APPROVED and pr_status != PullRequestStatus.APPROVED) or \
-                not BitbucketConfig.OMIT_REVIEWED_AND_APPROVED:
+        if (bitbucket_settings.omit_reviewed_and_approved and pr_status != PullRequestStatus.APPROVED) or \
+                not bitbucket_settings.omit_reviewed_and_approved:
             _pr['overallStatus'] = pr_status
             return _pr
 
@@ -82,7 +81,7 @@ def extract_pull_request_data(_raw_pull_requests) -> List[PullRequest]:
 
         pull_requests.append(PullRequest(
             id=str(_pr['id']),
-            title=abbreviate_string(_pr['title'], BitbucketConfig.ABBREVIATION_CHARACTERS),
+            title=abbreviate_string(_pr['title'], bitbucket_settings.abbreviation_characters),
             slug=_pr['toRef']['repository']['slug'],
             from_ref=_pr['fromRef']['displayId'],
             to_ref=_pr['toRef']['displayId'],

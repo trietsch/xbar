@@ -1,13 +1,13 @@
-from . import get_pull_request_overview, BitbucketIcons, BitbucketConfig
+from . import get_pull_request_overview, bitbucket_settings, BitbucketIcons
 from ..pull_requests import print_xbar_pull_request_menu
 
 print_xbar_pull_request_menu(
     get_pull_request_overview(
-        BitbucketConfig.PRIVATE_TOKEN,
-        BitbucketConfig.BITBUCKET_HOST
+        bitbucket_settings.private_token,
+        bitbucket_settings.bitbucket_host
     ),
     BitbucketIcons.PR_STATUSES,
-    BitbucketConfig.SORT_ON,
-    BitbucketConfig.CACHE_FILE,
-    BitbucketConfig.NOTIFICATIONS_ENABLED
+    bitbucket_settings.sort_on,
+    bitbucket_settings.cache_file,
+    bitbucket_settings.notifications_enabled
 )

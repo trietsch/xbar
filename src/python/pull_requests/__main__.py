@@ -1,9 +1,8 @@
 import concurrent.futures
 
 from . import PullRequestsOverview
-from .config import PullRequestsConfig
+from .config import pr_settings
 from .contants import PullRequestConstants
-from ..common.config import set_config_source
 from ..pull_requests import print_xbar_pull_request_menu
 
 executor = concurrent.futures.ThreadPoolExecutor()
@@ -11,8 +10,7 @@ executor = concurrent.futures.ThreadPoolExecutor()
 pr_overview = PullRequestsOverview([], [], [])
 pr_statuses = {}
 
-if PullRequestConstants.GITLAB_MODULE in PullRequestsConfig.ENABLED_PR_MODULES:
-    set_config_source("gitlab_mrs", "pull_requests", "gitlab_mrs")
+if PullRequestConstants.GITLAB_MODULE in pr_settings.enabled_pr_modules:
     from ..gitlab_mrs import get_merge_request_overview as gitlab_mrs_overview
     from ..gitlab_mrs import GitlabMrsIcons
 
@@ -20,34 +18,31 @@ if PullRequestConstants.GITLAB_MODULE in PullRequestsConfig.ENABLED_PR_MODULES:
     pr_overview = pr_overview.join(gl_future.result())
     pr_statuses = {**pr_statuses, **GitlabMrsIcons.PR_STATUSES}
 
-if PullRequestConstants.AZURE_DEVOPS_MODULE in PullRequestsConfig.ENABLED_PR_MODULES:
-    set_config_source("azure_devops", "pull_requests", "azure_devops")
-    from ..azure_devops import AzureDevOpsConfig, PullRequestClient
-    from ..azure_devops import AzureDevOpsIcons
+if PullRequestConstants.AZURE_DEVOPS_MODULE in pr_settings.enabled_pr_modules:
+    from ..azure_devops import PullRequestClient
+    from ..azure_devops.config import ado_settings, AzureDevOpsIcons
 
-    client = PullRequestClient()
-    azure_future = executor.submit(client.get_pull_requests_overview,
-                                   (AzureDevOpsConfig.PROJECTS,
-                                    AzureDevOpsConfig.PULL_REQUEST_STATUS,
-                                    AzureDevOpsConfig.USER_EMAIL,
-                                    AzureDevOpsConfig.TEAM_NAMES))
+    client = PullRequestClient(ado_settings)
+    azure_future = executor.submit(client.get_pull_requests_overview)
     pr_overview = pr_overview.join(azure_future.result())
     pr_statuses = {**pr_statuses, **AzureDevOpsIcons.PR_STATUSES}
 
-if PullRequestConstants.BITBUCKET_MODULE in PullRequestsConfig.ENABLED_PR_MODULES:
-    set_config_source("bitbucket", "pull_requests", "bitbucket")
-    from ..bitbucket import BitbucketConfig, BitbucketIcons
+if PullRequestConstants.BITBUCKET_MODULE in pr_settings.enabled_pr_modules:
     from ..bitbucket import get_pull_request_overview as bitbucket_prs_overview
+    from ..bitbucket import bitbucket_settings, BitbucketIcons
 
-    bitbucket_future = executor.submit(bitbucket_prs_overview,
-                                       (BitbucketConfig.PRIVATE_TOKEN, BitbucketConfig.BITBUCKET_HOST))
+    bitbucket_future = executor.submit(
+        bitbucket_prs_overview,
+        bitbucket_settings.private_token,
+        bitbucket_settings.bitbucket_host
+    )
     pr_overview = pr_overview.join(bitbucket_future.result())
     pr_statuses = {**pr_statuses, **BitbucketIcons.PR_STATUSES}
 
 print_xbar_pull_request_menu(
     pr_overview,
     pr_statuses,
-    PullRequestsConfig.SORT_ON,
-    PullRequestsConfig.CACHE_FILE,
-    PullRequestsConfig.NOTIFICATIONS_ENABLED
+    pr_settings.sort_on,
+    pr_settings.cache_file,
+    pr_settings.notifications_enabled
 )

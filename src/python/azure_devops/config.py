@@ -1,29 +1,61 @@
-from typing import Dict
+from typing import Dict, List
+
+from pydantic import computed_field, field_validator
+from pydantic_settings import BaseSettings
 
 from .constants import AzureDevOpsConstants
-from ..common.config import AppConfigReader
+from ..common.config import TomlConfigSettingsSource, get_cache_path
 from ..common.icons import Icons, Icon
 from ..pull_requests import PullRequestSort, PullRequestStatus
 
 
-class AzureDevOpsConfig(object):
-    _config = AppConfigReader.read(AzureDevOpsConstants.MODULE, config_file="pull_requests", section="azure_devops")
+class AzureDevOpsSettings(BaseSettings):
+    organization: str
+    personal_access_token: str
+    projects: List[str]
+    pull_request_status: str
+    user_email: str
+    team_names: List[str] = []
+    sort_on: PullRequestSort = PullRequestSort.ACTIVITY
+    abbreviation_characters: int = 30
+    omit_reviewed_and_approved: bool = False
+    omit_draft: bool = False
+    filter_by_reviewer: bool = True
+    notifications_enabled: bool = True
 
-    ORGANIZATION_URL = f'https://dev.azure.com/{_config["preferences"]["organization"]}'
-    PERSONAL_ACCESS_TOKEN = _config['preferences']['personal_access_token']
-    PROJECTS = _config['preferences']['projects']
-    PULL_REQUEST_STATUS = _config['preferences']['pull_request_status']
-    USER_EMAIL = _config['preferences']['user_email'].lower()
-    TEAM_NAMES = [name.lower() for name in _config['preferences']['team_names']]
+    @field_validator('user_email', mode='before')
+    @classmethod
+    def lowercase_email(cls, v: str) -> str:
+        return v.lower()
 
-    SORT_ON = PullRequestSort[_config['preferences']['sort_on'].upper()]
-    ABBREVIATION_CHARACTERS = _config['preferences']['abbreviation_characters']
-    OMIT_REVIEWED_AND_APPROVED = _config['preferences']['omit_reviewed_and_approved']
-    OMIT_DRAFT = _config['preferences'].get('omit_draft', False)
-    FILTER_BY_REVIEWER = _config['preferences'].get('filter_by_reviewer', True)
-    NOTIFICATIONS_ENABLED = _config['preferences']['notifications_enabled']
+    @field_validator('team_names', mode='before')
+    @classmethod
+    def lowercase_team_names(cls, v: List[str]) -> List[str]:
+        return [name.lower() for name in v]
 
-    CACHE_FILE = _config['common']['cache_path']
+    @field_validator('sort_on', mode='before')
+    @classmethod
+    def parse_sort_on(cls, v) -> PullRequestSort:
+        if isinstance(v, str):
+            return PullRequestSort[v.upper()]
+        return v
+
+    @computed_field
+    @property
+    def organization_url(self) -> str:
+        return f'https://dev.azure.com/{self.organization}'
+
+    @computed_field
+    @property
+    def cache_file(self) -> str:
+        return get_cache_path(AzureDevOpsConstants.MODULE)
+
+    @classmethod
+    def settings_customise_sources(cls, settings_cls, **kwargs):
+        return (TomlConfigSettingsSource(settings_cls, "pull_requests", "azure_devops"),)
+
+
+ado_settings = AzureDevOpsSettings()
 
 
 class AzureDevOpsIcons(object):

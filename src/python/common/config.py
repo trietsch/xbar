@@ -4,16 +4,26 @@ import tomllib
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from sys import platform
+from typing import Any, Tuple, Type
+
+from pydantic.fields import FieldInfo
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
 
 from ..common.util import get_config_file
 
 log_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Application Support/dev.trietsch.xbar")
 
-_config_sources: dict = {}  # module_name -> (config_filename, section_name)
 
+def get_cache_path(filename: str) -> str:
+    if platform in ("linux", "linux2"):
+        cache_path = os.path.join(os.path.expanduser(os.getenv("XDG_CACHE_HOME", "~/.cache")), "dev.trietsch.xbar")
+    else:
+        cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/dev.trietsch.xbar")
 
-def set_config_source(module: str, config_file: str, section: str):
-    _config_sources[module] = (config_file, section)
+    if not os.path.exists(cache_path):
+        os.makedirs(cache_path)
+
+    return f'{cache_path}/{filename}'
 
 
 def get_logger(name: str, loglevel=logging.DEBUG) -> logging.Logger:
@@ -37,35 +47,19 @@ def get_logger(name: str, loglevel=logging.DEBUG) -> logging.Logger:
     return logger
 
 
-class AppConfigReader(object):
-    @staticmethod
-    def read(module_name: str, config_file: str = None, section: str = None):
-        if config_file is None or section is None:
-            if module_name in _config_sources:
-                config_file, section = _config_sources[module_name]
-            else:
-                config_file, section = module_name, "preferences"
-
+class TomlConfigSettingsSource(PydanticBaseSettingsSource):
+    def __init__(self, settings_cls: Type[BaseSettings], config_file: str, section: str):
+        super().__init__(settings_cls)
         config_path = get_config_file(config_file)
         try:
             with open(config_path, 'rb') as f:
                 raw = tomllib.load(f)
+            self._data = raw.get(section, {})
         except FileNotFoundError:
-            raw = {}
+            self._data = {}
 
-        config = {"preferences": raw.get(section, {})}
-        AppConfigReader._add_cache_path(config, module_name)
-        return config
+    def get_field_value(self, field: FieldInfo, field_name: str) -> Tuple[Any, str, bool]:
+        return self._data.get(field_name), field_name, False
 
-    @staticmethod
-    def _add_cache_path(config: dict, filename: str):
-        if platform == "linux" or platform == "linux2":
-            cache_path = os.path.join(os.path.expanduser(os.getenv("XDG_CACHE_HOME", "~/.cache")), "dev.trietsch.xbar")
-        else:
-            cache_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Caches/dev.trietsch.xbar")
-
-        if not os.path.exists(cache_path):
-            os.makedirs(cache_path)
-
-        config.setdefault('common', {})
-        config['common']['cache_path'] = f'{cache_path}/{filename}'
+    def __call__(self) -> dict:
+        return dict(self._data)

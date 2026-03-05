@@ -10,6 +10,7 @@ dependencies = [
     "ics==0.7",
     "python-gitlab",
     "setuptools",
+    "pydantic-settings",
 ]
 
 [tool.uv]

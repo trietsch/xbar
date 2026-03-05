@@ -7,44 +7,38 @@ from azure.devops.v7_1.git.models import GitPullRequestSearchCriteria, GitPullRe
 from msrest.authentication import BasicAuthentication
 from requests import Timeout
 
-from .config import AzureDevOpsConfig, AzureDevOpsConstants
+from .config import AzureDevOpsSettings, AzureDevOpsConstants
 from ..common.util import abbreviate_string, time_ago
 from ..pull_requests import PullRequest, PullRequestStatus, PullRequestsOverview, PullRequestException
 
 
-class AzureDevOpsClientFactory(object):
-    _connection_factory = Connection(
-        base_url=AzureDevOpsConfig.ORGANIZATION_URL,
-        creds=BasicAuthentication('', AzureDevOpsConfig.PERSONAL_ACCESS_TOKEN)
-    )
-
-    @staticmethod
-    def get_git_client():
-        return AzureDevOpsClientFactory._connection_factory.clients.get_git_client()
-
-
 class PullRequestClient(object):
-    def __init__(self):
-        self._git_client = AzureDevOpsClientFactory.get_git_client()
+    def __init__(self, settings: AzureDevOpsSettings):
+        self._settings = settings
+        self._mapper = GitPullRequestMapper(settings)
+        connection = Connection(
+            base_url=settings.organization_url,
+            creds=BasicAuthentication('', settings.personal_access_token)
+        )
+        self._git_client = connection.clients.get_git_client()
 
-    def get_pull_requests_overview(self, projects, pr_status, user_email, team_names) -> PullRequestsOverview:
+    def get_pull_requests_overview(self) -> PullRequestsOverview:
         _prs_to_review: List[PullRequest] = []
         _prs_authored_with_work: List[PullRequest] = []
         _exception = None
 
         try:
             joined_prs = []
-            for project in projects:
-                # print("Query for project " + project)
-                joined_prs.extend(self._get_pull_requests_for_project(project, pr_status))
+            for project in self._settings.projects:
+                joined_prs.extend(self._get_pull_requests_for_project(project, self._settings.pull_request_status))
 
-            if AzureDevOpsConfig.OMIT_DRAFT:
+            if self._settings.omit_draft:
                 joined_prs = [pr for pr in joined_prs if not pr.is_draft]
 
-            _prs_to_review = self._get_pull_request_to_be_reviewed_by(joined_prs, user_email, team_names) \
-                if AzureDevOpsConfig.FILTER_BY_REVIEWER \
-                else GitPullRequestMapper.to_pull_requests(joined_prs)
-            _prs_authored_with_work = self._get_pull_requests_authored(joined_prs, user_email)
+            _prs_to_review = self._get_pull_requests_to_review(joined_prs) \
+                if self._settings.filter_by_reviewer \
+                else self._mapper.to_pull_requests(joined_prs)
+            _prs_authored_with_work = self._get_pull_requests_authored(joined_prs)
         except Timeout as e:
             _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.TIMEOUT_MESSAGE, e,
                                               traceback.format_exc())
@@ -64,44 +58,31 @@ class PullRequestClient(object):
         return self._git_client.get_pull_requests_by_project(project,
                                                              GitPullRequestSearchCriteria(status=pr_status))
 
-    @staticmethod
-    def _get_pull_requests_authored(prs: List[GitPullRequest], user_email: str) -> List[PullRequest]:
-        prs_authored = list(filter(lambda pr: user_email in pr.created_by.unique_name.lower(), prs))
-        return GitPullRequestMapper.to_pull_requests(prs_authored)
+    def _get_pull_requests_authored(self, prs: List[GitPullRequest]) -> List[PullRequest]:
+        prs_authored = [pr for pr in prs if self._settings.user_email in pr.created_by.unique_name.lower()]
+        return self._mapper.to_pull_requests(prs_authored)
 
-    @staticmethod
-    def _get_pull_request_to_be_reviewed_by(prs: List[GitPullRequest], user_email: str, team_names: List[str]) -> List[PullRequest]:
-        prs_to_review_by_user = list(filter(lambda pr:
-                                            PullRequestClient._is_reviewer_for_pr(
-                                                user_email,
-                                                team_names,
-                                                pr),
-                                            prs))
+    def _get_pull_requests_to_review(self, prs: List[GitPullRequest]) -> List[PullRequest]:
+        prs_to_review = [pr for pr in prs if self._is_reviewer_for_pr(pr)]
+        return self._mapper.to_pull_requests(prs_to_review)
 
-        return GitPullRequestMapper.to_pull_requests(prs_to_review_by_user)
+    def _is_reviewer_for_pr(self, pr: GitPullRequest) -> bool:
+        unique_names = [r.unique_name.lower() for r in pr.reviewers]
+        display_names = [r.display_name.lower() for r in pr.reviewers]
+        reviewer_status = self._mapper.get_reviewer_status(pr.reviewers)
 
-    @staticmethod
-    def _is_reviewer_for_pr(user_email, team_names, pr: GitPullRequest) -> bool:
-        reviewer_names = PullRequestClient._get_reviewer_names(pr)
-        reviewer_status = GitPullRequestMapper.get_reviewer_status(pr.reviewers)
+        is_reviewer = (
+            (self._settings.user_email in unique_names) or
+            any(team_name in display_name
+                for display_name in display_names
+                for team_name in self._settings.team_names)
+        ) and self._settings.user_email not in pr.created_by.unique_name.lower()
 
-        # If OMIT = True, don't show if status = Approved
-        # If OMIT = False, show all
-        is_reviewer = ((user_email in reviewer_names['unique_names']) or any(
-            team_name in reviewer_name for reviewer_name in reviewer_names['display_names'] for team_name in team_names)) and not (
-                user_email in pr.created_by.unique_name.lower())
-
-        should_review = (AzureDevOpsConfig.OMIT_REVIEWED_AND_APPROVED and reviewer_status != PullRequestStatus.APPROVED) \
-                        or not AzureDevOpsConfig.OMIT_REVIEWED_AND_APPROVED
+        should_review = (
+            self._settings.omit_reviewed_and_approved and reviewer_status != PullRequestStatus.APPROVED
+        ) or not self._settings.omit_reviewed_and_approved
 
         return is_reviewer and should_review
-
-    @staticmethod
-    def _get_reviewer_names(pr: GitPullRequest) -> Dict[List[str], List[str]]:
-        unique_names = list(map(lambda r: r.unique_name.lower(), pr.reviewers))
-        display_names = list(map(lambda r: r.display_name.lower(), pr.reviewers))
-
-        return dict(pr=pr, unique_names=unique_names, display_names=display_names)
 
 
 class GitPullRequestMapper(object):
@@ -113,25 +94,26 @@ class GitPullRequestMapper(object):
         10: PullRequestStatus.APPROVED
     }
 
+    def __init__(self, settings: AzureDevOpsSettings):
+        self._settings = settings
+
     @staticmethod
     def _short_ref(ref_name: str):
         return ref_name.replace('refs/heads/', '')
 
-    @staticmethod
-    def _to_pull_request(ado_pr: GitPullRequest) -> PullRequest:
+    def _to_pull_request(self, ado_pr: GitPullRequest) -> PullRequest:
         project = quote(ado_pr.repository.project.name, safe='')
-        repo_href = f"{AzureDevOpsConfig.ORGANIZATION_URL}/{project}/_git/{ado_pr.repository.name}"
+        repo_href = f"{self._settings.organization_url}/{project}/_git/{ado_pr.repository.name}"
         all_prs_href = f"{repo_href}/pullrequests?_a=active"
         pr_href = f"{repo_href}/pullrequest/{ado_pr.pull_request_id}"
 
         return PullRequest(
             id=str(ado_pr.pull_request_id),
-            title=abbreviate_string(ado_pr.title, AzureDevOpsConfig.ABBREVIATION_CHARACTERS),
+            title=abbreviate_string(ado_pr.title, self._settings.abbreviation_characters),
             slug=ado_pr.repository.name,
             from_ref=GitPullRequestMapper._short_ref(ado_pr.source_ref_name),
             to_ref=GitPullRequestMapper._short_ref(ado_pr.target_ref_name),
-            # TODO fix overall status for authored work?
-            overall_status=GitPullRequestMapper.get_reviewer_status(ado_pr.reviewers),
+            overall_status=self.get_reviewer_status(ado_pr.reviewers),
             is_draft=ado_pr.is_draft or False,
             activity=ado_pr.creation_date,
             time_ago=time_ago(ado_pr.creation_date),
@@ -139,15 +121,13 @@ class GitPullRequestMapper(object):
             href=pr_href
         )
 
-    @staticmethod
-    def to_pull_requests(ado_pull_requests: List[GitPullRequest]) -> List[PullRequest]:
-        return [GitPullRequestMapper._to_pull_request(ado_pr) for ado_pr in ado_pull_requests]
+    def to_pull_requests(self, ado_pull_requests: List[GitPullRequest]) -> List[PullRequest]:
+        return [self._to_pull_request(ado_pr) for ado_pr in ado_pull_requests]
 
-    @staticmethod
-    def get_reviewer_status(reviewers: List[IdentityRefWithVote]) -> PullRequestStatus:
-        user_review = list(filter(lambda r: r.unique_name.lower() == AzureDevOpsConfig.USER_EMAIL.lower(), reviewers))
+    def get_reviewer_status(self, reviewers: List[IdentityRefWithVote]) -> PullRequestStatus:
+        user_review = [r for r in reviewers if r.unique_name.lower() == self._settings.user_email]
 
         if len(user_review) > 0:
-            return GitPullRequestMapper._votes_mapping[user_review[0].vote]
+            return self._votes_mapping[user_review[0].vote]
         else:
             return PullRequestStatus.UNAPPROVED

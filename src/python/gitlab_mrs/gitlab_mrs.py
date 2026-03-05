@@ -6,7 +6,8 @@ from gitlab.const import AccessLevel
 from gitlab.v4.objects import ProjectMergeRequest, Group, GroupMember, GroupMergeRequest
 from requests import Timeout
 
-from .config import GitlabMrsConfig, GitlabMrsConstants
+from .config import gitlab_mrs_settings
+from .constants import GitlabMrsConstants
 from ..common.util import abbreviate_string, time_ago, zulu_timestamp_string_to_datetime
 from ..pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview, PullRequestException
 
@@ -19,7 +20,7 @@ def get_merge_requests_to_review(_author_id, _mrs):
             approvals = list(
                 filter(lambda approval: approval["user"]["id"] == _author_id, mr.approvals.get().approved_by))
 
-            if len(approvals) != 0 and not GitlabMrsConfig.OMIT_REVIEWED_AND_APPROVED:
+            if len(approvals) != 0 and not gitlab_mrs_settings.omit_reviewed_and_approved:
                 mrs_and_overall_status.append(get_overall_status(mr, _author_id))
             else:
                 mrs_and_overall_status.append(get_overall_status(mr, _author_id))
@@ -52,11 +53,6 @@ def get_overall_status(_mr, _author_id) -> (ProjectMergeRequest, PullRequestStat
 
 
 def mr_has_unresolved_threads(_mr, _author_id) -> bool:
-    # Get the `resolved` attribute, and default to true if the attribute does not exist,
-    # that way, we only get resolvable comments
-    # We only want to keep the unresolved comments that are not yet resolved and are resolvable,
-    # hence, we negate the attribute
-
     notes = _mr.notes.list(get_all=True)
 
     if _mr.author["id"] == _author_id:
@@ -90,7 +86,7 @@ def extract_pull_request_data(_raw_merge_requests) -> List[PullRequest]:
 
         merge_requests.append(PullRequest(
             id=str(mr.iid),
-            title=abbreviate_string(mr.title, GitlabMrsConfig.ABBREVIATION_CHARACTERS),
+            title=abbreviate_string(mr.title, gitlab_mrs_settings.abbreviation_characters),
             slug=mr.references["full"].replace(mr.references["short"], ""),
             from_ref=mr.source_branch,
             to_ref=mr.target_branch,
@@ -111,7 +107,7 @@ def list_mrs_for_group(_group: Group, _members_filter=None) -> List[GroupMergeRe
         member_usernames = []
 
     mrs = _group.mergerequests.list(state="opened", all=True,
-                                    wip="no") if GitlabMrsConfig.OMIT_DRAFT else _group.mergerequests.list(
+                                    wip="no") if gitlab_mrs_settings.omit_draft else _group.mergerequests.list(
         state="opened", all=True)
 
     if len(member_usernames) == 0:
@@ -130,7 +126,7 @@ def list_mrs_for_group_owners_in_other_groups(_gl, _main_group) -> List[GroupMer
 
     other_group_mrs: List[GroupMergeRequest] = []
 
-    for group_name in GitlabMrsConfig.OTHER_GROUPS_MRS_FOR_GROUP_MEMBERS:
+    for group_name in gitlab_mrs_settings.show_other_mrs_for_group_owners_in_these_groups:
         group = _gl.groups.get(group_name)
         other_group_mrs += list_mrs_for_group(group, members)
 
@@ -138,14 +134,13 @@ def list_mrs_for_group_owners_in_other_groups(_gl, _main_group) -> List[GroupMer
 
 
 def group_mrs(_gl):
-    main_group = _gl.groups.get(GitlabMrsConfig.GROUP_NAME)
+    main_group = _gl.groups.get(gitlab_mrs_settings.group_name)
 
     all_open_mrs = list_mrs_for_group(main_group) + list_mrs_for_group_owners_in_other_groups(_gl, main_group)
 
-    # Ensure we only keep MRs that have none of the labels in the exclusions list
     mrs = list(
         filter(
-            lambda mr: len(GitlabMrsConfig.EXCLUDE_MRS_WITH_LABELS.intersection(mr.labels)) == 0, all_open_mrs
+            lambda mr: len(gitlab_mrs_settings.exclude_mrs_with_labels.intersection(mr.labels)) == 0, all_open_mrs
         )
     )
 
@@ -169,7 +164,7 @@ def get_merge_request_overview() -> PullRequestsOverview:
     _exception = None
 
     try:
-        _gl = Gitlab(url=GitlabMrsConfig.GITLAB_HOST, private_token=GitlabMrsConfig.PRIVATE_TOKEN)
+        _gl = Gitlab(url=gitlab_mrs_settings.gitlab_host, private_token=gitlab_mrs_settings.private_token)
         _gl.auth()
         _author_id = _gl.user.id
 

@@ -1,24 +1,41 @@
 from typing import Dict
 
+from pydantic import computed_field, field_validator
+from pydantic_settings import BaseSettings
+
 from .constants import BitbucketConstants
-from ..common.config import AppConfigReader
+from ..common.config import TomlConfigSettingsSource, get_cache_path
 from ..common.icons import Icon, Icons
 from ..pull_requests import PullRequestSort, PullRequestStatus
 
 
-class BitbucketConfig(object):
-    _config = AppConfigReader.read(BitbucketConstants.MODULE)
+class BitbucketSettings(BaseSettings):
+    bitbucket_host: str
+    private_token: str
+    user_slug: str
+    sort_on: PullRequestSort = PullRequestSort.ACTIVITY
+    abbreviation_characters: int = 30
+    omit_reviewed_and_approved: bool = False
+    notifications_enabled: bool = False
 
-    BITBUCKET_HOST = _config['preferences']['bitbucket_host']
-    PRIVATE_TOKEN = _config['preferences']['private_token']
-    USER_SLUG = _config['preferences']['user_slug']
-    SORT_ON = PullRequestSort[_config['preferences']['sort_on'].upper()]
-    ABBREVIATION_CHARACTERS = _config['preferences']['abbreviation_characters']
-    OMIT_REVIEWED_AND_APPROVED = _config['preferences']['omit_reviewed_and_approved']
-    NOTIFICATIONS_ENABLED = _config['preferences']['notifications_enabled']
+    @field_validator('sort_on', mode='before')
+    @classmethod
+    def parse_sort_on(cls, v) -> PullRequestSort:
+        if isinstance(v, str):
+            return PullRequestSort[v.upper()]
+        return v
 
-    BITBUCKET_API_PULL_REQUESTS = '/rest/api/1.0/dashboard/pull-requests'
-    CACHE_FILE = _config['common']['cache_path']
+    @computed_field
+    @property
+    def cache_file(self) -> str:
+        return get_cache_path(BitbucketConstants.MODULE)
+
+    @classmethod
+    def settings_customise_sources(cls, settings_cls, **kwargs):
+        return (TomlConfigSettingsSource(settings_cls, "pull_requests", "bitbucket"),)
+
+
+bitbucket_settings = BitbucketSettings()
 
 
 class BitbucketIcons(object):
