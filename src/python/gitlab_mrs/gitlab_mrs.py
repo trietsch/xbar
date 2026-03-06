@@ -91,6 +91,7 @@ def extract_pull_request_data(_raw_merge_requests) -> List[PullRequest]:
             from_ref=mr.source_branch,
             to_ref=mr.target_branch,
             overall_status=overall_status,
+            is_draft=mr.work_in_progress,
             activity=pr_activity,
             time_ago=time_ago(pr_activity),
             all_prs_href=mr.web_url.replace(f"/{mr.iid}", ""),
@@ -106,9 +107,10 @@ def list_mrs_for_group(_group: Group, _members_filter=None) -> List[GroupMergeRe
     else:
         member_usernames = []
 
-    mrs = _group.mergerequests.list(state="opened", all=True,
-                                    wip="no") if gitlab_mrs_settings.omit_draft else _group.mergerequests.list(
-        state="opened", all=True)
+    if gitlab_mrs_settings.omit_draft and not gitlab_mrs_settings.include_own_drafts:
+        mrs = _group.mergerequests.list(state="opened", all=True, wip="no")
+    else:
+        mrs = _group.mergerequests.list(state="opened", all=True)
 
     if len(member_usernames) == 0:
         return mrs
@@ -169,6 +171,9 @@ def get_merge_request_overview() -> PullRequestsOverview:
         _author_id = _gl.user.id
 
         mrs = group_mrs(_gl)
+
+        if gitlab_mrs_settings.omit_draft and gitlab_mrs_settings.include_own_drafts:
+            mrs = [mr for mr in mrs if not mr.work_in_progress or mr.author['id'] == _author_id]
 
         _prs_to_review: List[PullRequest] = extract_pull_request_data(
             get_merge_requests_to_review(_author_id, mrs)

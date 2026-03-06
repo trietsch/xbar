@@ -20,6 +20,7 @@ class AzureDevOpsSettings(BaseSettings):
     abbreviation_characters: int = 30
     omit_reviewed_and_approved: bool = False
     omit_draft: bool = False
+    include_own_drafts: bool = False
     filter_by_reviewer: bool = True
     notifications_enabled: bool = True
 

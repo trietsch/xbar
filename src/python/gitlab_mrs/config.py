@@ -17,6 +17,7 @@ class GitlabMrsSettings(BaseSettings):
     abbreviation_characters: int = 30
     omit_reviewed_and_approved: bool = False
     omit_draft: bool = True
+    include_own_drafts: bool = False
     notifications_enabled: bool = False
     show_other_mrs_for_group_owners_in_these_groups: Set[str] = set()
     exclude_mrs_with_labels: Set[str] = set()

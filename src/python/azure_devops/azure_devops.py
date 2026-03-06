@@ -33,11 +33,18 @@ class PullRequestClient(object):
                 joined_prs.extend(self._get_pull_requests_for_project(project, self._settings.pull_request_status))
 
             if self._settings.omit_draft:
-                joined_prs = [pr for pr in joined_prs if not pr.is_draft]
+                joined_prs = [pr for pr in joined_prs
+                              if not pr.is_draft or (
+                                  self._settings.include_own_drafts and
+                                  self._settings.user_email in pr.created_by.unique_name.lower()
+                              )]
 
-            _prs_to_review = self._get_pull_requests_to_review(joined_prs) \
-                if self._settings.filter_by_reviewer \
-                else self._mapper.to_pull_requests(joined_prs)
+            if self._settings.filter_by_reviewer:
+                _prs_to_review = self._get_pull_requests_to_review(joined_prs)
+            else:
+                non_authored = [pr for pr in joined_prs
+                                if self._settings.user_email not in pr.created_by.unique_name.lower()]
+                _prs_to_review = self._mapper.to_pull_requests(non_authored)
             _prs_authored_with_work = self._get_pull_requests_authored(joined_prs)
         except Timeout as e:
             _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.TIMEOUT_MESSAGE, e,
@@ -60,7 +67,7 @@ class PullRequestClient(object):
 
     def _get_pull_requests_authored(self, prs: List[GitPullRequest]) -> List[PullRequest]:
         prs_authored = [pr for pr in prs if self._settings.user_email in pr.created_by.unique_name.lower()]
-        return self._mapper.to_pull_requests(prs_authored)
+        return self._mapper.to_pull_requests(prs_authored, authored=True)
 
     def _get_pull_requests_to_review(self, prs: List[GitPullRequest]) -> List[PullRequest]:
         prs_to_review = [pr for pr in prs if self._is_reviewer_for_pr(pr)]
@@ -101,11 +108,15 @@ class GitPullRequestMapper(object):
     def _short_ref(ref_name: str):
         return ref_name.replace('refs/heads/', '')
 
-    def _to_pull_request(self, ado_pr: GitPullRequest) -> PullRequest:
+    def _to_pull_request(self, ado_pr: GitPullRequest, authored: bool = False) -> PullRequest:
         project = quote(ado_pr.repository.project.name, safe='')
         repo_href = f"{self._settings.organization_url}/{project}/_git/{ado_pr.repository.name}"
         all_prs_href = f"{repo_href}/pullrequests?_a=active"
         pr_href = f"{repo_href}/pullrequest/{ado_pr.pull_request_id}"
+
+        status = (self.get_aggregate_reviewer_status(ado_pr.reviewers)
+                  if authored
+                  else self.get_reviewer_status(ado_pr.reviewers))
 
         return PullRequest(
             id=str(ado_pr.pull_request_id),
@@ -113,7 +124,7 @@ class GitPullRequestMapper(object):
             slug=ado_pr.repository.name,
             from_ref=GitPullRequestMapper._short_ref(ado_pr.source_ref_name),
             to_ref=GitPullRequestMapper._short_ref(ado_pr.target_ref_name),
-            overall_status=self.get_reviewer_status(ado_pr.reviewers),
+            overall_status=status,
             is_draft=ado_pr.is_draft or False,
             activity=ado_pr.creation_date,
             time_ago=time_ago(ado_pr.creation_date),
@@ -121,8 +132,8 @@ class GitPullRequestMapper(object):
             href=pr_href
         )
 
-    def to_pull_requests(self, ado_pull_requests: List[GitPullRequest]) -> List[PullRequest]:
-        return [self._to_pull_request(ado_pr) for ado_pr in ado_pull_requests]
+    def to_pull_requests(self, ado_pull_requests: List[GitPullRequest], authored: bool = False) -> List[PullRequest]:
+        return [self._to_pull_request(ado_pr, authored) for ado_pr in ado_pull_requests]
 
     def get_reviewer_status(self, reviewers: List[IdentityRefWithVote]) -> PullRequestStatus:
         user_review = [r for r in reviewers if r.unique_name.lower() == self._settings.user_email]
@@ -131,3 +142,18 @@ class GitPullRequestMapper(object):
             return self._votes_mapping[user_review[0].vote]
         else:
             return PullRequestStatus.UNAPPROVED
+
+    def get_aggregate_reviewer_status(self, reviewers: List[IdentityRefWithVote]) -> PullRequestStatus:
+        votes = [r.vote for r in reviewers if r.vote != 0]
+
+        if not votes:
+            return PullRequestStatus.UNAPPROVED
+        if -10 in votes:
+            return PullRequestStatus.REJECTED
+        if -5 in votes:
+            return PullRequestStatus.WAITING_FOR_AUTHOR
+        if 10 in votes:
+            return PullRequestStatus.APPROVED
+        if 5 in votes:
+            return PullRequestStatus.APPROVED_WITH_SUGGESTIONS
+        return PullRequestStatus.UNAPPROVED
