@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a collection of [xbar](https://github.com/matryer/xbar) / BitBar plugins for macOS that display developer tool status (pull requests, CI pipelines, on-call schedule) in the menu bar. Scripts are shell wrappers that invoke Python modules via `uv`.
+This is a collection of [SwiftBar](https://github.com/swiftbar/SwiftBar) plugins for macOS that display developer tool status (pull requests, CI pipelines, on-call schedule) in the menu bar. Scripts are shell wrappers that invoke Python modules via `uv`.
 
 ## Commands
 

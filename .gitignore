@@ -3,7 +3,6 @@ config/*.toml
 .idea
 **/__pycache__
 **/.pyc
-scripts/*.sh
 .DS_Store
 venv
 .venv

@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
 
-# <bitbar.title>Bitbucket PR</bitbar.title>
-# <bitbar.desc>Shows the status of PRs in a Bitbucket instance</bitbar.desc>
+# <bitbar.title>Man of the Day</bitbar.title>
+# <bitbar.desc>Shows today's on-call person from an iCalendar feed</bitbar.desc>
 # <bitbar.author>Robin Trietsch</bitbar.author>
 # <bitbar.author.github>trietsch</bitbar.author.github>
 # <bitbar.dependencies>uv</bitbar.dependencies>
 # <bitbar.abouturl>https://github.com/trietsch/xbar</bitbar.abouturl>
 
-# Settings can be found in the ../config/bitbucket_azure_devops-config.ini file
-# If it doesn't exist, copy the template file and fill out the details
-
 export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-cd "$DIR/src"
 
-uv run --project "$DIR" python -m python.bitbucket_azure_devops
+[ ! -d "$DIR/.venv" ] && uv sync --project "$DIR"
+
+cd "$DIR/src"
+exec "$DIR/.venv/bin/python" -m python.motd

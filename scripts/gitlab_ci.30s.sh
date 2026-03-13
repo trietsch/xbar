@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
 
-# <bitbar.title>Gitlab CI (CCMenu functionality)</bitbar.title>
-# <bitbar.desc>Shows the most recent build status for your projects</bitbar.desc>
+# <bitbar.title>GitLab CI</bitbar.title>
+# <bitbar.desc>Shows the most recent pipeline status for your projects</bitbar.desc>
 # <bitbar.author>Robin Trietsch</bitbar.author>
 # <bitbar.author.github>trietsch</bitbar.author.github>
 # <bitbar.dependencies>uv</bitbar.dependencies>
 # <bitbar.abouturl>https://github.com/trietsch/xbar</bitbar.abouturl>
 
-# Settings can be found in the ../config/gitlab_ci-config.ini file
-# If it doesn't exist, copy the template file and fill out the details
-
 export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-cd "$DIR/src"
 
-uv run --project "$DIR" python -m python.gitlab_ci
+[ ! -d "$DIR/.venv" ] && uv sync --project "$DIR"
+
+cd "$DIR/src"
+exec "$DIR/.venv/bin/python" -m python.gitlab_ci
