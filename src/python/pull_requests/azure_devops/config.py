@@ -4,9 +4,9 @@ from pydantic import computed_field, field_validator
 from pydantic_settings import BaseSettings
 
 from .constants import AzureDevOpsConstants
-from ..common.config import TomlConfigSettingsSource, get_cache_path
-from ..common.icons import Icons, Icon
-from ..pull_requests import PullRequestSort, PullRequestStatus
+from ...common.config import TomlConfigSettingsSource, get_cache_path
+from ...common.icons import Icons, Icon
+from .. import PullRequestSort, PullRequestStatus
 
 
 class AzureDevOpsSettings(BaseSettings):
@@ -54,9 +54,6 @@ class AzureDevOpsSettings(BaseSettings):
     @classmethod
     def settings_customise_sources(cls, settings_cls, **kwargs):
         return (TomlConfigSettingsSource(settings_cls, "pull_requests", "azure_devops"),)
-
-
-ado_settings = AzureDevOpsSettings()
 
 
 class AzureDevOpsIcons(object):

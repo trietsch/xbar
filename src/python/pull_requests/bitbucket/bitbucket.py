@@ -4,10 +4,10 @@ from typing import List
 import requests
 from requests import Timeout
 
-from .config import bitbucket_settings
+from .config import bitbucket_settings, _settings_error
 from .constants import BitbucketConstants
-from ..common.util import epoch_ms_to_datetime, abbreviate_string, time_ago
-from ..pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview, PullRequestException
+from ...common.util import epoch_ms_to_datetime, abbreviate_string, time_ago
+from .. import PullRequestStatus, PullRequest, PullRequestsOverview, PullRequestException
 
 
 def get_open_pull_requests_to_review(_api_key, _url):
@@ -95,16 +95,19 @@ def extract_pull_request_data(_raw_pull_requests) -> List[PullRequest]:
     return pull_requests
 
 
-def get_pull_request_overview(private_token: str, host: str) -> PullRequestsOverview:
+def get_pull_request_overview() -> PullRequestsOverview:
+    if _settings_error is not None:
+        return PullRequestsOverview.create([], [], _settings_error)
+
     _prs_to_review: List[PullRequest] = []
     _prs_authored_with_work: List[PullRequest] = []
     _exception = None
     try:
         _prs_to_review: List[PullRequest] = extract_pull_request_data(
-            get_open_pull_requests_to_review(private_token, host)
+            get_open_pull_requests_to_review(bitbucket_settings.private_token, bitbucket_settings.bitbucket_host)
         )
         _prs_authored_with_work: List[PullRequest] = extract_pull_request_data(
-            get_authored_pull_requests_with_work(private_token, host)
+            get_authored_pull_requests_with_work(bitbucket_settings.private_token, bitbucket_settings.bitbucket_host)
         )
     except Timeout as e:
         _exception = PullRequestException(BitbucketConstants.MODULE, BitbucketConstants.TIMEOUT_MESSAGE, e,

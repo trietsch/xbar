@@ -1,43 +1,56 @@
 import concurrent.futures
 
-from . import PullRequestsOverview
+from . import PullRequestsOverview, print_xbar_pull_request_menu
 from .config import pr_settings
-from .contants import PullRequestConstants
-from ..pull_requests import print_xbar_pull_request_menu
+from .constants import PullRequestConstants
+from .domain import PullRequestException
 
 executor = concurrent.futures.ThreadPoolExecutor()
 
 pr_overview = PullRequestsOverview([], [], [])
 pr_statuses = {}
 
-if PullRequestConstants.GITLAB_MODULE in pr_settings.enabled_pr_modules:
-    from ..gitlab_mrs import get_merge_request_overview as gitlab_mrs_overview
-    from ..gitlab_mrs import GitlabMrsIcons
+if not pr_settings.enabled_pr_modules:
+    pr_overview.exceptions.append(PullRequestException(
+        "pull_requests",
+        "No PR modules configured. Add 'enabled_pr_modules' to pull_requests-config.toml under [preferences].",
+        None,
+        None
+    ))
 
-    gl_future = executor.submit(gitlab_mrs_overview)
-    pr_overview = pr_overview.join(gl_future.result())
-    pr_statuses = {**pr_statuses, **GitlabMrsIcons.PR_STATUSES}
+known_modules = {
+    PullRequestConstants.GITLAB_MODULE,
+    PullRequestConstants.AZURE_DEVOPS_MODULE,
+    PullRequestConstants.BITBUCKET_MODULE,
+}
 
-if PullRequestConstants.AZURE_DEVOPS_MODULE in pr_settings.enabled_pr_modules:
-    from ..azure_devops import PullRequestClient
-    from ..azure_devops.config import ado_settings, AzureDevOpsIcons
+futures = {}
 
-    client = PullRequestClient(ado_settings)
-    azure_future = executor.submit(client.get_pull_requests_overview)
-    pr_overview = pr_overview.join(azure_future.result())
-    pr_statuses = {**pr_statuses, **AzureDevOpsIcons.PR_STATUSES}
+for module in pr_settings.enabled_pr_modules:
+    if module not in known_modules:
+        pr_overview.exceptions.append(PullRequestException(
+            module,
+            f"Unknown module '{module}'. Known modules: {', '.join(sorted(known_modules))}.",
+            None,
+            None
+        ))
+        continue
 
-if PullRequestConstants.BITBUCKET_MODULE in pr_settings.enabled_pr_modules:
-    from ..bitbucket import get_pull_request_overview as bitbucket_prs_overview
-    from ..bitbucket import bitbucket_settings, BitbucketIcons
+    if module == PullRequestConstants.GITLAB_MODULE:
+        from .gitlab_mrs import get_merge_request_overview, GitlabMrsIcons
+        futures[module] = (executor.submit(get_merge_request_overview), GitlabMrsIcons.PR_STATUSES)
 
-    bitbucket_future = executor.submit(
-        bitbucket_prs_overview,
-        bitbucket_settings.private_token,
-        bitbucket_settings.bitbucket_host
-    )
-    pr_overview = pr_overview.join(bitbucket_future.result())
-    pr_statuses = {**pr_statuses, **BitbucketIcons.PR_STATUSES}
+    elif module == PullRequestConstants.AZURE_DEVOPS_MODULE:
+        from .azure_devops import get_pull_requests_overview, AzureDevOpsIcons
+        futures[module] = (executor.submit(get_pull_requests_overview), AzureDevOpsIcons.PR_STATUSES)
+
+    elif module == PullRequestConstants.BITBUCKET_MODULE:
+        from .bitbucket import get_pull_request_overview, BitbucketIcons
+        futures[module] = (executor.submit(get_pull_request_overview), BitbucketIcons.PR_STATUSES)
+
+for module, (future, statuses) in futures.items():
+    pr_overview = pr_overview.join(future.result())
+    pr_statuses = {**pr_statuses, **statuses}
 
 print_xbar_pull_request_menu(
     pr_overview,

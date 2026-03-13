@@ -5,11 +5,26 @@ from urllib.parse import quote
 from azure.devops.connection import Connection
 from azure.devops.v7_1.git.models import GitPullRequestSearchCriteria, GitPullRequest, IdentityRefWithVote
 from msrest.authentication import BasicAuthentication
+from pydantic import ValidationError
 from requests import Timeout
 
-from .config import AzureDevOpsSettings, AzureDevOpsConstants
-from ..common.util import abbreviate_string, time_ago
-from ..pull_requests import PullRequest, PullRequestStatus, PullRequestsOverview, PullRequestException
+from .config import AzureDevOpsSettings
+from .constants import AzureDevOpsConstants
+from ...common.util import abbreviate_string, time_ago
+from .. import PullRequest, PullRequestStatus, PullRequestsOverview, PullRequestException
+
+
+def get_pull_requests_overview() -> PullRequestsOverview:
+    try:
+        settings = AzureDevOpsSettings()
+    except ValidationError as e:
+        return PullRequestsOverview.create([], [], PullRequestException(
+            AzureDevOpsConstants.MODULE,
+            f"Configuration error: {e}",
+            e,
+            traceback.format_exc()
+        ))
+    return PullRequestClient(settings).get_pull_requests_overview()
 
 
 class PullRequestClient(object):
@@ -57,7 +72,7 @@ class PullRequestClient(object):
                                               traceback.format_exc())
 
         if _prs_to_review + _prs_authored_with_work == 0:
-            _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.NO_RESULTS, None)
+            _exception = PullRequestException(AzureDevOpsConstants.MODULE, AzureDevOpsConstants.NO_RESULTS, None, None)
 
         return PullRequestsOverview.create(_prs_to_review, _prs_authored_with_work, _exception)
 

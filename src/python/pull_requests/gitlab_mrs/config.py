@@ -1,12 +1,13 @@
+import traceback
 from typing import Dict, Set
 
-from pydantic import computed_field, field_validator
+from pydantic import ValidationError, computed_field, field_validator
 from pydantic_settings import BaseSettings
 
 from .constants import GitlabMrsConstants
-from ..common.config import TomlConfigSettingsSource, get_cache_path
-from ..common.icons import Icon, Icons
-from ..pull_requests import PullRequestSort, PullRequestStatus
+from ...common.config import TomlConfigSettingsSource, get_cache_path
+from ...common.icons import Icon, Icons
+from .. import PullRequestSort, PullRequestStatus, PullRequestException
 
 
 class GitlabMrsSettings(BaseSettings):
@@ -39,7 +40,17 @@ class GitlabMrsSettings(BaseSettings):
         return (TomlConfigSettingsSource(settings_cls, "pull_requests", "gitlab_mrs"),)
 
 
-gitlab_mrs_settings = GitlabMrsSettings()
+_settings_error = None
+try:
+    gitlab_mrs_settings = GitlabMrsSettings()
+except ValidationError as e:
+    gitlab_mrs_settings = None
+    _settings_error = PullRequestException(
+        GitlabMrsConstants.MODULE,
+        f"Configuration error: {e}",
+        e,
+        traceback.format_exc()
+    )
 
 
 class GitlabMrsIcons(object):

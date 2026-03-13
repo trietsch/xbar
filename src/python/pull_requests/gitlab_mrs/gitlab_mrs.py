@@ -6,10 +6,10 @@ from gitlab.const import AccessLevel
 from gitlab.v4.objects import ProjectMergeRequest, Group, GroupMember, GroupMergeRequest
 from requests import Timeout
 
-from .config import gitlab_mrs_settings
+from .config import gitlab_mrs_settings, _settings_error
 from .constants import GitlabMrsConstants
-from ..common.util import abbreviate_string, time_ago, zulu_timestamp_string_to_datetime
-from ..pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview, PullRequestException
+from ...common.util import abbreviate_string, time_ago, zulu_timestamp_string_to_datetime
+from .. import PullRequestStatus, PullRequest, PullRequestsOverview, PullRequestException
 
 
 def get_merge_requests_to_review(_author_id, _mrs):
@@ -161,6 +161,9 @@ def group_mrs(_gl):
 
 
 def get_merge_request_overview() -> PullRequestsOverview:
+    if _settings_error is not None:
+        return PullRequestsOverview.create([], [], _settings_error)
+
     _prs_to_review: List[PullRequest] = []
     _prs_authored_with_work: List[PullRequest] = []
     _exception = None
