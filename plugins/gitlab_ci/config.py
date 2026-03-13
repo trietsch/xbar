@@ -1,4 +1,4 @@
-from ..common.config import AppConfigReader
+from common.config import AppConfigReader
 
 
 class GitlabConstants(object):

@@ -9,7 +9,7 @@ from typing import Any, Tuple, Type
 from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
 
-from ..common.util import get_config_file
+from common.util import get_config_file
 
 log_path = os.path.abspath(str(Path.home().absolute()) + "/Library/Application Support/dev.trietsch.xbar")
 

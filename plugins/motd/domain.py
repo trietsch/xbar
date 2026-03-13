@@ -1,4 +1,4 @@
-from ..common.icons import Icon
+from common.icons import Icon
 
 
 class MotdIcons(object):

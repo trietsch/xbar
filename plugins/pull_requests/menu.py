@@ -4,12 +4,12 @@ from typing import List, Dict
 from .config import PullRequestsConstants
 from .domain import PullRequest, PullRequestSort, PullRequestStatus, PullRequestsOverview, PullRequestException
 from .notification import send_notification_pr
-from ..common.config import get_logger
-from ..common.icons import Icon, Icons
-from ..common.util import get_absolute_path_to_repo_file
+from common.config import get_logger
+from common.icons import Icon, Icons
+from common.util import get_absolute_path_to_repo_file
 
 logger = get_logger(__name__)
-open_multiple_urls = get_absolute_path_to_repo_file('src/open-multiple-urls.sh')
+open_multiple_urls = get_absolute_path_to_repo_file('plugins/open-multiple-urls.sh')
 
 
 def sort_pull_requests(pull_requests: List[PullRequest], sort_on: PullRequestSort):

@@ -1,4 +1,4 @@
-from ..common.notification import send_notification
+from common.notification import send_notification
 
 
 def send_notification_pr(change_text, repo_slug, from_ref, to_ref, title, url=None):

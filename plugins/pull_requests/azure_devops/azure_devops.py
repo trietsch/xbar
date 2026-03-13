@@ -10,8 +10,8 @@ from requests import Timeout
 
 from .config import AzureDevOpsSettings
 from .constants import AzureDevOpsConstants
-from ...common.util import abbreviate_string, time_ago
-from .. import PullRequest, PullRequestStatus, PullRequestsOverview, PullRequestException
+from common.util import abbreviate_string, time_ago
+from pull_requests import PullRequest, PullRequestStatus, PullRequestsOverview, PullRequestException
 
 
 def get_pull_requests_overview() -> PullRequestsOverview:

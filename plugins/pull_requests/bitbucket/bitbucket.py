@@ -6,8 +6,8 @@ from requests import Timeout
 
 from .config import bitbucket_settings, _settings_error
 from .constants import BitbucketConstants
-from ...common.util import epoch_ms_to_datetime, abbreviate_string, time_ago
-from .. import PullRequestStatus, PullRequest, PullRequestsOverview, PullRequestException
+from common.util import epoch_ms_to_datetime, abbreviate_string, time_ago
+from pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview, PullRequestException
 
 
 def get_open_pull_requests_to_review(_api_key, _url):

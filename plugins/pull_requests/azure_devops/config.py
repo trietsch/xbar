@@ -4,9 +4,9 @@ from pydantic import computed_field, field_validator
 from pydantic_settings import BaseSettings
 
 from .constants import AzureDevOpsConstants
-from ...common.config import TomlConfigSettingsSource, get_cache_path
-from ...common.icons import Icons, Icon
-from .. import PullRequestSort, PullRequestStatus
+from common.config import TomlConfigSettingsSource, get_cache_path
+from common.icons import Icons, Icon
+from pull_requests import PullRequestSort, PullRequestStatus
 
 
 class AzureDevOpsSettings(BaseSettings):

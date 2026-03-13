@@ -8,8 +8,8 @@ from requests import Timeout
 
 from .config import gitlab_mrs_settings, _settings_error
 from .constants import GitlabMrsConstants
-from ...common.util import abbreviate_string, time_ago, zulu_timestamp_string_to_datetime
-from .. import PullRequestStatus, PullRequest, PullRequestsOverview, PullRequestException
+from common.util import abbreviate_string, time_ago, zulu_timestamp_string_to_datetime
+from pull_requests import PullRequestStatus, PullRequest, PullRequestsOverview, PullRequestException
 
 
 def get_merge_requests_to_review(_author_id, _mrs):

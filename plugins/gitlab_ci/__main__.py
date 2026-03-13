@@ -5,7 +5,7 @@ import dateutil.parser
 from requests import Timeout
 
 from . import GitlabConfig, PipelineStatus, get_projects, get_most_recent_project_pipeline_status, GitlabIcons
-from ..common.util import time_ago
+from common.util import time_ago
 
 overall_status = PipelineStatus.INACTIVE
 bitbar_gitlab_projects = []

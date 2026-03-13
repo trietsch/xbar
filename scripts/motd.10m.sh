@@ -12,5 +12,5 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 [ ! -d "$DIR/.venv" ] && uv sync --project "$DIR"
 
-cd "$DIR/src"
-exec "$DIR/.venv/bin/python" -m python.motd
+cd "$DIR/plugins"
+exec "$DIR/.venv/bin/python" -m motd

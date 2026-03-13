@@ -23,6 +23,28 @@ Supported platforms (configure via `enabled_pr_modules` in `pull_requests-config
 
 ![](assets/azure_devops-bitbucket-prs.png)
 
+#### Menu bar
+
+The number shown in the menu bar is the total count of PRs that need your attention: open PRs assigned to you for review, plus your own PRs that have received feedback.
+
+#### Color coding
+
+Each PR and repository shows a status icon:
+
+| Color | Meaning |
+|---|---|
+| 🟢 Green | Approved (or approved with suggestions) |
+| 🟠 Orange | Needs work / waiting for author |
+| ⚫ Grey | Not yet reviewed |
+| 🔴 Red | Rejected |
+
+The repository-level icon reflects the worst status across all its PRs.
+
+#### Sections
+
+- **Reviewing** — PRs where you are assigned as a reviewer
+- **Authored** — your own PRs that have received a "needs work" or "rejected" vote
+
 ### GitLab CI
 
 Shows the pipeline status for starred/member GitLab projects, similar to CCMenu.

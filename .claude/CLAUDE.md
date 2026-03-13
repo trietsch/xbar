@@ -13,18 +13,16 @@ This is a collection of [SwiftBar](https://github.com/swiftbar/SwiftBar) plugins
 uv sync
 
 # Run a module directly (from repo root)
-cd src && uv run --project .. python -m python.pull_requests
-cd src && uv run --project .. python -m python.azure_devops
-cd src && uv run --project .. python -m python.gitlab_ci
-cd src && uv run --project .. python -m python.gitlab_mrs
-cd src && uv run --project .. python -m python.motd
+cd plugins && uv run --project .. python -m pull_requests
+cd plugins && uv run --project .. python -m gitlab_ci
+cd plugins && uv run --project .. python -m motd
 ```
 
 Scripts in `scripts/` are the actual xbar plugin files. Copy a template from `scripts/template/` (removing `.template`) to `scripts/` to enable it.
 
 ## Architecture
 
-### Module layout (`src/python/`)
+### Module layout (`plugins/`)
 
 - **`common/`** — Shared infrastructure:
   - `config.py` — `AppConfigReader` reads TOML config; `set_config_source()` overrides which config file/section a module reads from; logging setup

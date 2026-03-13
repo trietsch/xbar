@@ -5,9 +5,9 @@ from pydantic import ValidationError, computed_field, field_validator
 from pydantic_settings import BaseSettings
 
 from .constants import BitbucketConstants
-from ...common.config import TomlConfigSettingsSource, get_cache_path
-from ...common.icons import Icon, Icons
-from .. import PullRequestSort, PullRequestStatus, PullRequestException
+from common.config import TomlConfigSettingsSource, get_cache_path
+from common.icons import Icon, Icons
+from pull_requests import PullRequestSort, PullRequestStatus, PullRequestException
 
 
 class BitbucketSettings(BaseSettings):

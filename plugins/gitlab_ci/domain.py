@@ -1,6 +1,6 @@
 from enum import Enum
 
-from ..common.icons import Icons, Icon
+from common.icons import Icons, Icon
 
 PipelineStatus = Enum('Status', 'SUCCESS FAILURE FAILURE_BUILDING SUCCESS_BUILDING INACTIVE MANUAL ERROR UNKNOWN')
 GitlabCiStatus = Enum('CiStatus', 'running pending success failed canceled skipped manual unknown')

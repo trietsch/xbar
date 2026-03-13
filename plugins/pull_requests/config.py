@@ -4,8 +4,8 @@ from pydantic import computed_field, field_validator
 from pydantic_settings import BaseSettings
 
 from .constants import PullRequestConstants
-from ..common.config import TomlConfigSettingsSource, get_cache_path
-from ..common.icons import Icon
+from common.config import TomlConfigSettingsSource, get_cache_path
+from common.icons import Icon
 from .domain import PullRequestSort
 
 
